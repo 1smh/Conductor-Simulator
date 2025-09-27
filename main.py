@@ -62,6 +62,7 @@ class Musician(Entity):
         self.health_bar = Entity(parent=self, y=1.2, model='cube', color=color.red, world_scale=(1.5,.1,.1))
         self.max_hp = 1
         self.hp = self.max_hp
+        self.instrument = Entity(parent=self, model='violinprefab', position=(-0.4,0.8,1), scale=0.05, rotation=(-80,90,-60))
         
     # def update(self):
     #     self.look_at_2d(player.position, 'y')
@@ -94,7 +95,7 @@ class Note(Entity):
         super().__init__(parent=shootables_parent, model=model_choice, origin_y=-.5, color=color.cyan, collider='box', **kwargs)
         self.max_hp = 1
         self.hp = self.max_hp
-        self.initial_scale = 1
+        self.initial_scale = 0.5
         self.scale_y = self.initial_scale
         self.scale_x = self.initial_scale
         self.scale_z = self.initial_scale
@@ -116,7 +117,7 @@ class Note(Entity):
 
         # hit_info = raycast(self.world_position + Vec3(0,1,0), self.forward, 30, ignore=(self,))
         # print(hit_info.entity)
-        
+
     @property
     def hp(self):
         return self._hp
@@ -142,9 +143,10 @@ def spawn_enemies(radius, count):
         Musician(x=x, z=z)
 
 # Spawn 5 enemies in a smaller semicircle and 10 in a larger semicircle
-spawn_enemies(6, 5)
-spawn_enemies(8, 7)
+spawn_enemies(6, 6)
+spawn_enemies(8, 9)
 spawn_enemies(10, 10)
+spawn_enemies(12, 15)
 
 def pause_input(key):
     if key == 'tab':    # press tab to toggle edit/play mode
