@@ -16,40 +16,23 @@ player.collider = BoxCollider(player, Vec3(0,1,0), Vec3(1,2,1))
 gun = Entity(model='cube', parent=camera, position=(.5,-.25,.25), scale=(.3,.2,1), origin_z=-.5, color=color.red, on_cooldown=False)
 gun.muzzle_flash = Entity(parent=gun, z=1, world_scale=.5, model='quad', color=color.yellow, enabled=False)
 
-violin = Entity(model='violinprefab', position=(0,5,0))
-violin.look_at_2d(player)
-
 shootables_parent = Entity()
 mouse.traverse_target = shootables_parent
 
-large_health = Entity(model='cube')
+health_bar = Entity(y=50, x=10, z=10, model='cube', color=color.red, world_scale=(15,1,1))
+health_bar.world_scale_x = 15
+health_bar.alpha = 1
 
-Entity(model='cube', origin_y=-.5, scale=2, texture='brick', texture_scale=(1,2),
-        x=0,
-        z=0,
-        collider='box',
-        scale_y = 1,
-        color=color.hsv(0, 0, random.uniform(.9, 1))
-        )
+def spawn_conductor_platform():
+    platform = Entity(model='cube', scale=(2,2,4), color=color.gray, position=(0,1,-6), collider='box')
+    platform_top = Entity(parent=platform, model='cube', scale=(1,0.2,1), color=color.light_gray, position=(0,.6,0), texture='white_cube', texture_scale=(4,4))
 
-Entity(model='cube', origin_y=-.5, scale=2, texture='brick', texture_scale=(1,2),
-        x=0,
-        z=5,
-        collider='box',
-        scale_y = 5,
-        color=color.hsv(0, 0, random.uniform(.9, 1))
-        )
-
-
-Entity(model='cube', origin_y=-.5, scale=2, texture='brick', texture_scale=(1,2),
-        x=5,
-        z=0,
-        collider='box',
-        scale_y = 3,
-        color=color.hsv(0, 0, random.uniform(.9, 1))
-        )
+spawn_conductor_platform()
 
 def update():
+    health_bar.world_scale_x -= 0.01
+    if health_bar.world_scale_x < 0:
+        health_bar.world_scale_x = 0.00000000001
     if held_keys['left mouse']:
         shoot()
 
@@ -66,6 +49,7 @@ def shoot():
         if mouse.hovered_entity and hasattr(mouse.hovered_entity, 'hp'):
             mouse.hovered_entity.blink(color.red)
             mouse.hovered_entity.hp -= 10
+        health_bar.world_scale_x += 5
 
 class Enemy(Entity):
     def __init__(self, **kwargs):
@@ -90,7 +74,21 @@ class Enemy(Entity):
         self.health_bar.alpha = 1
 
 # Enemy()
-enemies = [Enemy(x=x*4-10) for x in range(4)]
+# Spawn 5 enemies in a smaller semicircle and 10 in a larger semicircle
+import math
+
+def spawn_enemies(radius, count):
+    center = Vec3(0,0,0)
+    for i in range(count):
+        angle = math.pi * i / (count-1)  # 0 to pi
+        x = center.x + radius * math.cos(angle)
+        z = center.z + radius * math.sin(angle)
+        Enemy(x=x, z=z)
+
+# Spawn 5 enemies in a smaller semicircle and 10 in a larger semicircle
+spawn_enemies(6, 5)
+spawn_enemies(8, 7)
+spawn_enemies(10, 10)
 
 def pause_input(key):
     if key == 'tab':    # press tab to toggle edit/play mode
