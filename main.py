@@ -19,7 +19,7 @@ gun.muzzle_flash = Entity(parent=gun, z=1, world_scale=.5, model='quad', color=c
 shootables_parent = Entity()
 mouse.traverse_target = shootables_parent
 
-health_bar = Entity(y=50, x=10, z=10, model='cube', color=color.red, world_scale=(15,1,1))
+health_bar = Entity(y=3, x=0, z=-20, model='cube', color=color.red, world_scale=(15,1,1))
 health_bar.world_scale_x = 15
 health_bar.alpha = 1
 
@@ -35,6 +35,8 @@ def update():
         health_bar.world_scale_x = 0.00000000001
     if held_keys['left mouse']:
         shoot()
+    if held_keys['right mouse']:
+        Note(x=random.uniform(-20,20), z=random.uniform(2,10), y=random.uniform(4,20))
 
 #repurpose for selecting musicians
 def shoot():
@@ -51,13 +53,23 @@ def shoot():
             mouse.hovered_entity.hp -= 10
         health_bar.world_scale_x += 5
 
-class Enemy(Entity):
+class Musician(Entity):
     def __init__(self, **kwargs):
         super().__init__(parent=shootables_parent, model='cube', scale_y=2, origin_y=-.5, color=color.light_gray, collider='box', **kwargs)
+        self.health_bar = Entity(parent=self, y=1.2, model='cube', color=color.red, world_scale=(1.5,.1,.1))
+        self.max_hp = 1
+        self.hp = self.max_hp
+        
+    # def update(self):
+    #     self.look_at_2d(player.position, 'y')
 
     def update(self):
-        self.look_at_2d(player.position, 'y')
+        self.health_bar.alpha = max(0, self.health_bar.alpha - time.dt)
 
+        self.look_at_2d(player.position, 'y')
+        hit_info = raycast(self.world_position + Vec3(0,1,0), self.forward, 30, ignore=(self,))
+        # print(hit_info.entity)
+        
     @property
     def hp(self):
         return self._hp
@@ -73,7 +85,45 @@ class Enemy(Entity):
         self.health_bar.world_scale_x = self.hp / self.max_hp * 1.5
         self.health_bar.alpha = 1
 
-# Enemy()
+class Note(Entity):
+    def __init__(self, **kwargs):
+        super().__init__(parent=shootables_parent, model='sphere', origin_y=-.5, color=color.cyan, collider='box', **kwargs)
+        self.max_hp = 1
+        self.hp = self.max_hp
+        
+    # def update(self):
+    #     self.look_at_2d(player.position, 'y')
+
+    def update(self):
+        self.scale_y += time.dt * 0.5
+        self.scale_x += time.dt * 0.5
+        self.scale_z += time.dt * 0.5
+
+        if self.scale_z > 3:
+            self.color = color.red
+            if self.scale_z > 6:
+                self.color = color.black
+                destroy(self)
+                health_bar.world_scale_x -= 1
+                if health_bar.world_scale_x < 0:
+                    health_bar.world_scale_x = 0.00000000001
+
+        # hit_info = raycast(self.world_position + Vec3(0,1,0), self.forward, 30, ignore=(self,))
+        # print(hit_info.entity)
+        
+    @property
+    def hp(self):
+        return self._hp
+
+    #upon setting hp anytime it appears this would run
+    @hp.setter
+    def hp(self, value):
+        self._hp = value
+        if value <= 0:
+            destroy(self)
+            return
+
+# Musician()
 # Spawn 5 enemies in a smaller semicircle and 10 in a larger semicircle
 import math
 
@@ -83,7 +133,7 @@ def spawn_enemies(radius, count):
         angle = math.pi * i / (count-1)  # 0 to pi
         x = center.x + radius * math.cos(angle)
         z = center.z + radius * math.sin(angle)
-        Enemy(x=x, z=z)
+        Musician(x=x, z=z)
 
 # Spawn 5 enemies in a smaller semicircle and 10 in a larger semicircle
 spawn_enemies(6, 5)
