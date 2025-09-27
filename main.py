@@ -90,25 +90,28 @@ class Musician(Entity):
 
 class Note(Entity):
     def __init__(self, **kwargs):
-        super().__init__(parent=shootables_parent, model='sphere', origin_y=-.5, color=color.cyan, collider='box', **kwargs)
+        model_choice = random.choice(['uploads_files_2463307_Note+Eight', 'uploads_files_2463288_Eighth+note'])
+        super().__init__(parent=shootables_parent, model=model_choice, origin_y=-.5, color=color.cyan, collider='box', **kwargs)
         self.max_hp = 1
         self.hp = self.max_hp
-        
-    # def update(self):
-    #     self.look_at_2d(player.position, 'y')
+        self.initial_scale = 1
+        self.scale_y = self.initial_scale
+        self.scale_x = self.initial_scale
+        self.scale_z = self.initial_scale
 
     def update(self):
+        # Rotate the entity by 90 degrees around the Y axis after looking at the player
         self.scale_y += time.dt * 0.5
         self.scale_x += time.dt * 0.5
         self.scale_z += time.dt * 0.5
 
-        if self.scale_z > 3.5:
+        if self.scale_z > self.initial_scale + 2.5:
             self.color = color.red
-            if self.scale_z > 4:
+            if self.scale_z > self.initial_scale + 3:
                 self.color = color.black
                 health_bar.world_scale_x -= 1
-                if health_bar.world_scale_x < 0:
-                    health_bar.world_scale_x = 0.00000000001
+                if health_bar.world_scale_x <= 0:
+                    health_bar.world_scale_x = 0.0001
                 destroy(self)
 
         # hit_info = raycast(self.world_position + Vec3(0,1,0), self.forward, 30, ignore=(self,))
