@@ -30,13 +30,16 @@ def spawn_conductor_platform():
 spawn_conductor_platform()
 
 def update():
-    health_bar.world_scale_x -= 0.01
-    if health_bar.world_scale_x < 0:
-        health_bar.world_scale_x = 0.00000000001
     if held_keys['left mouse']:
         shoot()
     if held_keys['right mouse']:
         Note(x=random.uniform(-20,20), z=random.uniform(2,10), y=random.uniform(4,20))
+    if not hasattr(update, 'note_timer'):
+        update.note_timer = 0
+    update.note_timer += time.dt
+    if update.note_timer > random.uniform(0.5, 1):  # spawn every 1 second
+        Note(x=random.uniform(-20,20), z=random.uniform(2,10), y=random.uniform(4,20))
+        update.note_timer = 0
 
 #repurpose for selecting musicians
 def shoot():
@@ -51,7 +54,7 @@ def shoot():
         if mouse.hovered_entity and hasattr(mouse.hovered_entity, 'hp'):
             mouse.hovered_entity.blink(color.red)
             mouse.hovered_entity.hp -= 10
-        health_bar.world_scale_x += 5
+        # health_bar.world_scale_x += 5
 
 class Musician(Entity):
     def __init__(self, **kwargs):
@@ -99,14 +102,14 @@ class Note(Entity):
         self.scale_x += time.dt * 0.5
         self.scale_z += time.dt * 0.5
 
-        if self.scale_z > 3:
+        if self.scale_z > 3.5:
             self.color = color.red
-            if self.scale_z > 6:
+            if self.scale_z > 4:
                 self.color = color.black
-                destroy(self)
                 health_bar.world_scale_x -= 1
                 if health_bar.world_scale_x < 0:
                     health_bar.world_scale_x = 0.00000000001
+                destroy(self)
 
         # hit_info = raycast(self.world_position + Vec3(0,1,0), self.forward, 30, ignore=(self,))
         # print(hit_info.entity)
