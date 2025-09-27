@@ -16,8 +16,13 @@ player.collider = BoxCollider(player, Vec3(0,1,0), Vec3(1,2,1))
 gun = Entity(model='cube', parent=camera, position=(.5,-.25,.25), scale=(.3,.2,1), origin_z=-.5, color=color.red, on_cooldown=False)
 gun.muzzle_flash = Entity(parent=gun, z=1, world_scale=.5, model='quad', color=color.yellow, enabled=False)
 
+violin = Entity(model='violinprefab', position=(0,5,0))
+violin.look_at_2d(player)
+
 shootables_parent = Entity()
 mouse.traverse_target = shootables_parent
+
+large_health = Entity(model='cube')
 
 Entity(model='cube', origin_y=-.5, scale=2, texture='brick', texture_scale=(1,2),
         x=0,
@@ -34,6 +39,7 @@ Entity(model='cube', origin_y=-.5, scale=2, texture='brick', texture_scale=(1,2)
         scale_y = 5,
         color=color.hsv(0, 0, random.uniform(.9, 1))
         )
+
 
 Entity(model='cube', origin_y=-.5, scale=2, texture='brick', texture_scale=(1,2),
         x=5,
@@ -72,6 +78,7 @@ class Enemy(Entity):
     def hp(self):
         return self._hp
 
+    #upon setting hp anytime it appears this would run
     @hp.setter
     def hp(self, value):
         self._hp = value
