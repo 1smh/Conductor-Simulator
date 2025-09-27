@@ -1,0 +1,17 @@
+# One-Armed Band Game Dependencies
+# Conductor Game using Ursina Engine
+
+# Core game engine
+ursina>=5.0.0
+
+# Audio processing
+pygame>=2.1.0
+
+# Optional: Enhanced audio support
+# numpy>=1.21.0  # For advanced audio processing if needed
+# pillow>=8.3.0  # For enhanced image support if needed
+
+# Development dependencies (optional)
+# pytest>=6.2.0  # For testing
+# black>=21.0.0  # For code formatting
+# flake8>=3.9.0  # For linting

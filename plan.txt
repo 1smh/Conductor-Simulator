@@ -1,0 +1,341 @@
+# One-Armed Band Game - Updated Implementation Plan
+
+## Game Overview
+A conductor game where you synchronize musicians in an orchestra. Different groups play different instruments, and you must tap space to keep them synchronized while removing bad actors with Q.
+
+## Detailed Function and Variable Documentation
+
+### **main.py** - Entry point with title screen and scene management
+
+#### Classes:
+- **GameState** - Enum-like class for game states
+  - `TITLE` - Title screen state
+  - `GAME` - Active gameplay state
+  - `VICTORY` - Victory screen state
+  - `DEFEAT` - Defeat screen state
+
+#### Game Class Variables:
+- `self.state` - Current game state (title, game, victory, defeat)
+- `self.level` - Instance of Level class for gameplay
+- `self.player` - Instance of Player class for conductor
+- `self.input_enabled` - Boolean to control input handling
+- `self.title_text` - Text entity for game title
+- `self.subtitle_text` - Text entity for subtitle
+- `self.start_button` - Button entity for starting game
+- `self.instructions` - Text entity showing controls
+
+#### Game Class Functions:
+- `__init__()` - Initialize game with title screen setup
+- `setup_title_screen()` - Create title screen UI elements
+- `start_game()` - Transition from title to game state
+- `update()` - Main game loop handling input and state
+- `pause_game()` - Pause gameplay and disable input
+- `restart_game()` - Reset to title screen and clean up
+- `show_victory()` - Display victory screen with restart option
+- `show_defeat()` - Display defeat screen with restart option
+
+#### Functions:
+- `main()` - Entry point that initializes Ursina and starts game
+
+---
+
+### **level.py** - Main game level with orchestra management
+
+#### Level Class Variables:
+- `self.game_duration` - Total level time in seconds (default: 60)
+- `self.time_remaining` - Time left in current level
+- `self.level_start_time` - Timestamp when level started
+- `self.beat_align` - Effectiveness of conductor synchronization (0.3 = 30%)
+- `self.offsetness_threshold` - Maximum allowed sync deviation (5.0)
+- `self.min_musicians` - Minimum musicians per group to continue (3)
+- `self.concert` - List of Group objects (orchestra groups)
+- `self.offsetness` - Current average offset from perfect sync
+- `self.audio_manager` - AudioManager instance for audio control
+- `self.image_manager` - ImageManager instance for graphics
+- `self.ui_elements` - List of UI text entities
+- `self.stage` - Entity representing the stage platform
+- `self.backdrop` - Entity for stage background
+
+#### UI Elements:
+- `self.timer_text` - Displays remaining time
+- `self.offset_text` - Shows current sync status
+- `self.group_status_text` - Shows each group's status
+- `self.instructions_text` - Displays control instructions
+
+#### Level Class Functions:
+- `__init__(game_duration)` - Initialize level with duration
+- `init_level()` - Set up stage, orchestra, audio, and UI
+- `setup_stage()` - Create stage platform and backdrop
+- `setup_orchestra()` - Create musician groups with positions
+- `setup_audio()` - Start audio tracks for each group
+- `setup_ui()` - Create all UI text elements
+- `start_level()` - Begin level timing
+- `update()` - Main level update loop
+- `update_timer()` - Update countdown timer
+- `update_orchestra()` - Update all groups and calculate offset
+- `handle_synchronization()` - Process space key synchronization
+- `show_synchronization_effect()` - Create visual wave effect
+- `update_audio()` - Update audio based on group performance
+- `update_ui()` - Refresh all UI displays
+- `check_victory_conditions()` - Check win/lose conditions
+- `victory()` - Handle successful completion
+- `defeat(reason)` - Handle failure with reason
+- `get_orchestra_performance()` - Calculate overall performance score
+- `cleanup()` - Clean up all level resources
+
+---
+
+### **musician.py** - Individual musician entities
+
+#### Musician Class Variables:
+- `self.position` - 3D position (x, y, z) of musician
+- `self.group_id` - Letter identifier for group (A, B, C)
+- `self.musician_id` - Number identifier within group
+- `self.bad_actor` - Boolean: is this musician disruptive
+- `self.active` - Boolean: is musician still in orchestra
+- `self.performance_quality` - Float 0.0-1.0: how well they perform
+- `self.bad_actor_probability` - Chance per frame to become bad (0.01)
+- `self.drift_factor` - How much they drift from perfect timing
+- `self.image_manager` - ImageManager for texture loading
+- `self.hover_color` - Color when mouse hovers (red)
+- `self.original_color` - Normal color based on group
+
+#### Musician Class Functions:
+- `__init__(position, group_id, musician_id)` - Initialize musician
+- `setup_visual()` - Create visual representation with texture/color
+- `get_group_color()` - Return color based on group ID
+- `update()` - Update state each frame (bad actor checks, visuals)
+- `become_bad_actor()` - Convert musician to disruptive state
+- `improve_performance()` - Improve performance (called on intervention)
+- `get_audio_offset(base_bpm, beat_align)` - Calculate timing offset
+- `get_volume_multiplier()` - Get volume based on performance
+- `remove_from_orchestra()` - Remove musician from performance
+- `on_mouse_enter()` - Handle mouse hover start
+- `on_mouse_exit()` - Handle mouse hover end
+
+---
+
+### **group.py** - Musician group management
+
+#### Group Class Variables:
+- `self.group_id` - Letter identifier (A, B, C)
+- `self.num_musicians` - Total musicians in group
+- `self.position` - 3D position of group center
+- `self.width` - Width of group area
+- `self.length` - Length of group area
+- `self.musicians` - List of all Musician objects
+- `self.active_musicians` - List of currently active musicians
+- `self.base_volume` - Base volume for group audio (1.0)
+- `self.current_volume` - Current volume after adjustments
+- `self.audio_offset` - Current timing offset from perfect
+- `self.target_bpm` - Target beats per minute (120.0)
+- `self.current_bpm` - Current BPM with variations
+- `self.platform` - Entity for group area visualization
+- `self.label` - Text entity showing group name
+
+#### Group Class Functions:
+- `__init__(group_id, num_musicians, width, length, position)` - Initialize group
+- `setup_group_area()` - Create visual platform and label
+- `create_musicians()` - Create and position all musicians in grid
+- `determine_audio(beat_align)` - Calculate audio settings and return offset
+- `remove_musician(musician)` - Remove specific musician from group
+- `get_active_count()` - Return number of active musicians
+- `get_total_count()` - Return total number of musicians
+- `get_bad_actor_count()` - Return number of bad actors in group
+- `get_group_performance()` - Calculate average performance (0.0-1.0)
+- `update()` - Update all musicians and visual feedback
+- `cleanup()` - Clean up group resources
+
+---
+
+### **player.py** - Conductor character and controls
+
+#### Player Class Variables:
+- `self.position` - 3D position of conductor
+- `self.speed` - Movement speed (5.0)
+- `self.interaction_range` - Range for removing musicians (10.0)
+- `self.last_click_time` - Timestamp of last interaction
+- `self.click_cooldown` - Minimum time between clicks (0.5s)
+- `self.image_manager` - ImageManager for conductor texture
+- `self.baton` - Entity for conductor baton
+- `self.baton_base_rotation` - Base rotation of baton (45°)
+- `self.baton_animation_time` - Time remaining for baton animation
+
+#### Player Class Functions:
+- `__init__(position)` - Initialize conductor at position
+- `setup_visual()` - Create conductor visual with texture/color
+- `setup_camera()` - Set up top-down camera view
+- `setup_baton()` - Create animated conductor baton
+- `update()` - Main update loop for movement and interactions
+- `handle_movement()` - Process arrow key/WASD movement
+- `handle_interactions()` - Process Q key and space key inputs
+- `kill()` - Raycast to find and remove bad musicians
+- `remove_musician(musician)` - Remove specific musician
+- `show_removal_effect(position)` - Create particle effect
+- `synchronize()` - Trigger synchronization action
+- `trigger_baton_animation()` - Start baton animation
+- `animate_baton()` - Animate baton rotation and scale
+- `update_camera()` - Keep camera following player
+- `get_interaction_targets()` - Find bad actors within range
+- `show_interaction_hint()` - Display interaction instructions
+- `cleanup()` - Clean up player resources
+
+---
+
+### **imageManager.py** - Image asset management with fallbacks
+
+#### ImageManager Class Variables:
+- `self.images_folder` - Path to images directory ("images")
+- `self.texture_cache` - Dictionary caching loaded textures
+- `self.fallback_textures` - Dictionary of fallback texture names
+
+
+#### ImageManager Class Functions:
+- `__init__(images_folder)` - Initialize with images directory
+- `create_fallback_textures()` - Create fallback texture mappings
+- `get_image(image_name, fallback_name)` - Load image with fallback
+- `get_texture(texture_name)` - Alias for get_image
+- `create_simple_texture(name, color_value, size)` - Create colored texture
+- `list_available_images()` - Return list of available image files
+- `preload_images(image_list)` - Preload images into cache
+- `clear_cache()` - Clear texture cache
+- `get_image_info(image_name)` - Get file information for image
+
+---
+
+### **audioManager.py** - Audio track management
+
+#### AudioManager Class Variables:
+- `self.audios_folder` - Path to audios directory ("audios")
+- `self.audio_cache` - Dictionary caching loaded audio
+- `self.active_tracks` - Dictionary of currently playing tracks
+- `self.base_bpm` - Base beats per minute (120.0)
+- `self.master_volume` - Master volume control (0.7)
+- `self.track_configs` - Dictionary of instrument configurations
+
+#### AudioManager Class Functions:
+- `__init__(audios_folder)` - Initialize with pygame mixer
+- `create_fallback_textures()` - Create fallback texture mappings
+- `load_audio(track_name, group_id)` - Load audio file with fallback
+- `create_silent_audio()` - Create silent audio fallback
+- `get_track_for_group(group_id, instrument_type)` - Get appropriate track
+- `start_track(group_id, instrument_type, volume, pitch)` - Start playing track
+- `stop_track(group_id)` - Stop specific track
+- `pause_track(group_id)` - Pause specific track
+- `resume_track(group_id)` - Resume paused track
+- `update_track_properties(group_id, volume_multiplier, pitch_multiplier, offset_factor)` - Update track
+- `slow_down_track(group_id, factor)` - Reduce track speed
+- `speed_up_track(group_id, factor)` - Increase track speed
+- `set_master_volume(volume)` - Set overall volume
+- `stop_all_tracks()` - Stop all active tracks
+- `pause_all_tracks()` - Pause all tracks
+- `resume_all_tracks()` - Resume all tracks
+- `get_active_track_count()` - Return number of active tracks
+- `list_available_audio()` - Return list of available audio files
+- `cleanup()` - Clean up audio resources
+- `get_instrument_for_group(group_id)` - Get default instrument for group
+
+---
+
+### Asset Directories:
+- **images/** - Image assets directory
+  - Conductor, musician, stage, and background images
+  - README with format specifications
+  - Fallback behavior documentation
+
+- **audios/** - Audio assets directory
+  - Instrument tracks (drums, trumpet, bass, etc.)
+  - Group-specific audio variants
+  - README with audio requirements
+
+### Configuration:
+- **requirements.txt** - Python dependencies
+  - Ursina engine (core framework)
+  - Pygame (audio support)
+  - Optional development dependencies
+
+- **plan_original.txt** - Original game plan (backup)
+
+## Game Features Implemented:
+
+### Core Gameplay:
+- ✅ Title screen with start functionality
+- ✅ Orchestra with 3 groups (A, B, C) of musicians
+- ✅ Conductor with baton and synchronization abilities
+- ✅ Bad actor musicians that disrupt performance
+- ✅ Space key synchronization mechanic
+- ✅ Q key musician removal mechanic
+- ✅ Victory/defeat conditions
+
+### Visual System:
+- ✅ Top-down camera view of orchestra stage
+- ✅ Colored musician cubes with group identification
+- ✅ Visual feedback for bad actors (red pulsing)
+- ✅ Conductor baton animation
+- ✅ Particle effects for musician removal
+- ✅ Synchronization wave effects
+- ✅ Performance-based color feedback
+
+### Audio System:
+- ✅ Multi-track audio management
+- ✅ Group-specific instrument tracks
+- ✅ Dynamic volume adjustment based on active musicians
+- ✅ Tempo/pitch variation for bad actors
+- ✅ Audio synchronization with conductor actions
+
+### UI System:
+- ✅ Game timer display
+- ✅ Orchestra sync status indicator
+- ✅ Group status display (active musicians, bad actors)
+- ✅ Control instructions
+- ✅ Victory/defeat screens
+
+### Asset Management:
+- ✅ Fallback system for missing images (colored cubes)
+- ✅ Fallback system for missing audio (silent tracks)
+- ✅ Multi-format support for images and audio
+- ✅ Asset caching for performance
+
+## Technical Enhancements:
+
+### Ursina Engine Optimizations:
+- Used Ursina's built-in Entity system for all game objects
+- Leveraged Ursina's animation system for smooth transitions
+- Utilized Ursina's audio system with pygame backend
+- Implemented proper scene management with parent-child relationships
+- Used Ursina's built-in collision and interaction systems
+
+### Code Organization:
+- Modular design with clear separation of concerns
+- Proper error handling and fallback systems
+- Extensible architecture for future modifications
+- Clean class inheritance from Ursina's Entity class
+- Consistent naming conventions and documentation
+
+### Performance Considerations:
+- Texture and audio caching systems
+- Efficient update loops with early returns
+- Proper cleanup methods for resource management
+- Optimized visual effects with destroy delays
+
+## Game Balance:
+- Beat alignment factor: 0.3 (30% improvement from conductor intervention)
+- Offsetness threshold: 5.0 (maximum allowed sync deviation)
+- Minimum musicians per group: 1 (to continue playing)
+- Bad actor probability: 1% per frame
+- Game duration: 60 seconds (configurable)
+
+## Controls:
+- **Space**: Synchronize the orchestra (reduce offsetness)
+- **Q**: Remove bad musicians (click on red pulsing musicians)
+- **Arrow Keys/WASD**: Move conductor (limited range)
+- **Escape**: Pause game
+- **R**: Restart from victory/defeat screen
+
+## Future Modification Points:
+- Easy to add new instrument groups
+- Configurable game duration and difficulty
+- Expandable asset system
+- Modular UI components
+- Extensible victory conditions
+- Customizable musician behaviors
