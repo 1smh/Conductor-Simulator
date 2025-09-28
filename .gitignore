@@ -1,3 +1,8 @@
 venv/
 example.py
 models_compressed/
+dist/
+build/
+__pycache__/
+main.spec
+build_Windows/

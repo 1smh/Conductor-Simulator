@@ -3,12 +3,17 @@ from ursina.prefabs.first_person_controller import FirstPersonController
 from ursina.shaders import lit_with_shadows_shader
 from ursina.prefabs.ursfx import ursfx
 
+from pathlib import Path
+from ursina import application
+
+# application.asset_folder = Path(__file__).parent / 'src'
+
 app = Ursina()
 
 random.seed(0)
 Entity.default_shader = lit_with_shadows_shader
 
-ground = Entity(model='concerthallv3', position=(-150.75,-5,-310.75), scale=15, texture='grass', texture_scale=(4,4), rotation=(0,0,180))
+ground = Entity(model='models/concerthallv3', position=(-150.75,-5,-310.75), scale=15, rotation=(0,0,180))
 ground.collider = 'mesh'
 
 editor_camera = EditorCamera(enabled=False, ignore_paused=True)
@@ -100,7 +105,7 @@ class Musician(Entity):
         self.health_bar = Entity(parent=self, y=1.2, model='cube', color=color.red, world_scale=(1.5,.1,.1))
         self.max_hp = 1
         self.hp = self.max_hp
-        self.instrument = Entity(parent=self, model='violinprefab', position=(-0.4,0.8,1), scale=0.05, rotation=(-80,90,-60))
+        self.instrument = Entity(parent=self, model='models/violinprefab_old', position=(-0.4,0.8,1), scale=0.05, rotation=(-80,90,-60))
         
     # def update(self):
     #     self.look_at_2d(player.position, 'y')
@@ -129,7 +134,7 @@ class Musician(Entity):
 
 class Note(Entity):
     def __init__(self, **kwargs):
-        model_choice = random.choice(['uploads_files_2463307_Note+Eight', 'uploads_files_2463288_Eighth+note'])
+        model_choice = random.choice(['models/uploads_files_2463307_Note+Eight', 'models/uploads_files_2463288_Eighth+note'])
         super().__init__(parent=shootables_parent, model=model_choice, origin_y=-.5, color=color.cyan, collider='box', **kwargs)
         self.max_hp = 1
         self.hp = self.max_hp
@@ -205,7 +210,6 @@ def pause_input(key):
         application.paused = editor_camera.enabled
 
 pause_handler = Entity(ignore_paused=True, input=pause_input)
-
 
 sun = DirectionalLight()
 sun.look_at(Vec3(1,-1,-1))
