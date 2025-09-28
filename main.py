@@ -8,7 +8,7 @@ app = Ursina()
 random.seed(0)
 Entity.default_shader = lit_with_shadows_shader
 
-ground = Entity(model='plane', collider='box', scale=64, texture='grass', texture_scale=(4,4))
+ground = Entity(model='concerthallv3', collider='box', position=(318,-15,650), scale=32, texture='grass', texture_scale=(4,4), rotation=(180,0,0))
 
 editor_camera = EditorCamera(enabled=False, ignore_paused=True)
 player = FirstPersonController(model='cube', z=-10, color=color.orange, origin_y=-.5, speed=8, collider='box')
