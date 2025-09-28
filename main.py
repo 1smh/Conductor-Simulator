@@ -29,13 +29,6 @@ health_bar = Entity(y=3, x=0, z=-20, model='cube', color=color.red, world_scale=
 health_bar.world_scale_x = 15
 health_bar.alpha = 1
 
-def spawn_conductor_platform():
-    platform = Entity(model='cube', scale=(2,2,4), color=color.gray, position=(0,1,-6))
-    platform_top = Entity(parent=platform, model='cube', scale=(1,0.2,1), color=color.light_gray, position=(0,.6,0), texture='white_cube', texture_scale=(4,4))
-    podium = Entity(parent=platform, model='cube', scale=(0.5,0.5,0.25), color=color.brown, position=(0,0.9,0.3), texture='white_cube', texture_scale=(4,4), rotation=(0,0,0))
-    
-# spawn_conductor_platform()
-
 def update():
     if held_keys['q']:
         shoot()
@@ -73,12 +66,6 @@ def update():
             update.tempo_window_allowed = False
             tempoMarker.color = color.green
     
-    # if not hasattr(update, 'note_timer'):
-    #     update.note_timer = 0
-    # update.note_timer += time.dt
-    # if update.note_timer > random.uniform(0.5, 1):  # spawn every 1 second
-    #     Note(x=random.uniform(-20,20), z=random.uniform(2,10), y=random.uniform(4,20))
-    #     update.note_timer = 0
     offsets = []
     for group in orchestra:
         offsets.append(group.determineAudio(0.0)) #beat align is currently 0.0
@@ -125,7 +112,6 @@ orchestra.append(trumpet)
 orchestra.append(trumpet2)
 
 pause_handler = Entity(ignore_paused=True, input=pause_input)
-
 
 sun = DirectionalLight()
 sun.look_at(Vec3(1,-1,-1))
