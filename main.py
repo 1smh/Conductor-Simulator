@@ -14,7 +14,7 @@ editor_camera = EditorCamera(enabled=False, ignore_paused=True)
 player = FirstPersonController(model='cube', z=-10, color=color.orange, origin_y=-.5, speed=8, collider='box')
 player.collider = BoxCollider(player, Vec3(0,1,0), Vec3(1,2,1))
 
-gun = Entity(model='cube', parent=camera, position=(.5,-.25,.25), scale=(.3,.2,1), origin_z=-.5, color=color.red, on_cooldown=False)
+gun = Entity(model='cube', parent=camera, position=(.2,-.25,.25), scale=(.01,.01,1.5), rotation=(0,10,0), origin_z=-.5, color=color.black, on_cooldown=False)
 gun.muzzle_flash = Entity(parent=gun, z=1, world_scale=.5, model='quad', color=color.yellow, enabled=False)
 
 shootables_parent = Entity()
@@ -34,14 +34,33 @@ spawn_conductor_platform()
 def update():
     if held_keys['left mouse']:
         shoot()
-    if held_keys['right mouse']:
-        Note(x=random.uniform(-20,20), z=random.uniform(2,10), y=random.uniform(4,20))
-    if not hasattr(update, 'note_timer'):
-        update.note_timer = 0
-    update.note_timer += time.dt
-    if update.note_timer > random.uniform(0.5, 1):  # spawn every 1 second
-        Note(x=random.uniform(-20,20), z=random.uniform(2,10), y=random.uniform(4,20))
-        update.note_timer = 0
+
+    if not hasattr(update, 'tempo_window_timer'):
+        update.tempo_window_timer = 0
+        update.tempo_window_allowed = False
+
+    update.tempo_window_timer += time.dt
+
+    if update.tempo_window_timer >= 1:
+        update.tempo_window_allowed = True
+        update.tempo_window_timer = 0
+        update.tempo_window_opened = time.time()
+
+    if update.tempo_window_allowed:
+        if time.time() - update.tempo_window_opened > 0.1:
+            health_bar.world_scale_x -= 1
+            if health_bar.world_scale_x <= 0:
+                health_bar.world_scale_x = 0.0001
+            update.tempo_window_allowed = False
+        elif held_keys['right mouse']:
+            update.tempo_window_allowed = False
+    
+    # if not hasattr(update, 'note_timer'):
+    #     update.note_timer = 0
+    # update.note_timer += time.dt
+    # if update.note_timer > random.uniform(0.5, 1):  # spawn every 1 second
+    #     Note(x=random.uniform(-20,20), z=random.uniform(2,10), y=random.uniform(4,20))
+    #     update.note_timer = 0
 
 #repurpose for selecting musicians
 def shoot():
@@ -49,12 +68,14 @@ def shoot():
         # print('shoot')
         gun.on_cooldown = True
         gun.muzzle_flash.enabled=True
+        gun.rotation = (0,0,0)
         #ursfx([(0.0, 0.0), (0.1, 0.9), (0.15, 0.75), (0.3, 0.14), (0.6, 0.0)], volume=0.5, wave='noise', pitch=random.uniform(-13,-12), pitch_change=-12, speed=3.0)
         invoke(gun.muzzle_flash.disable, delay=0.05)
         invoke(setattr, gun, 'on_cooldown', False, delay=.15)
+        invoke(setattr, gun, 'rotation', (0,10,0), delay=0.1)
         if mouse.hovered_entity and hasattr(mouse.hovered_entity, 'hp'):
             mouse.hovered_entity.blink(color.red)
-            mouse.hovered_entity.hp -= 10
+            mouse.hovered_entity.hp -= 1
         # health_bar.world_scale_x += 5
 
 class Musician(Entity):
