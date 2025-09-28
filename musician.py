@@ -9,6 +9,7 @@ mouse.traverse_target = shootables_parent
 class Musician(Entity):
     
     def __init__(self,  **kwargs ):
+        self.player = Entity( position=(0,100,-10), origin_y=-.5, speed=0)
         super().__init__(parent=shootables_parent, model='cube', scale_y=2, origin_y=-.5, color=color.light_gray, collider='box', **kwargs)
         self.health_bar = Entity(parent=self, y=1.2, model='cube', color=color.red, world_scale=(1.5,.1,.1))
         self.max_hp = 1
@@ -32,7 +33,6 @@ class Musician(Entity):
     #     self.look_at_2d(player.position, 'y')
 
     def update(self):
-        self.player = Entity( position=(0,100,-10), origin_y=-.5, speed=0)
 
         self.health_bar.alpha = max(0, self.health_bar.alpha - time.dt)
         self.look_at_2d(self.player.position, 'y')

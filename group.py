@@ -12,7 +12,6 @@ import statistics
 import math
 
 class Group():
-
     def __init__(self, radius, height, count, group):
         center = Vec3(0,height,-10)
         start_angle = math.radians(20)
@@ -34,8 +33,6 @@ class Group():
         # Musician management
         # self.target_bpm = audioManager.alltracks[track]["bpm"]
         # self.current_bpm = self.target_bpm
-        
-        
             
     def determineAudio(self, beat_align):
         if not self.active_musicians:

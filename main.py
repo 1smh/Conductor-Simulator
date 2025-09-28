@@ -84,7 +84,6 @@ def update():
         offsets.append(group.determineAudio(0.0)) #beat align is currently 0.0
     am.determineAudio(offsets) 
 
-
 #repurpose for selecting musicians
 def shoot():
     if not gun.on_cooldown:
@@ -100,26 +99,6 @@ def shoot():
             mouse.hovered_entity.blink(color.red)
             mouse.hovered_entity.hp -= 1
         # health_bar.world_scale_x += 5
-
-
-
-class Note(Entity):
-    def __init__(self, **kwargs):
-        model_choice = random.choice(['uploads_files_2463307_Note+Eight', 'uploads_files_2463288_Eighth+note'])
-        super().__init__(parent=shootables_parent, model=model_choice, origin_y=-.5, color=color.cyan, collider='box', **kwargs)
-        self.max_hp = 1
-        self.hp = self.max_hp
-        self.initial_scale = 0.5
-        self.scale_y = self.initial_scale
-        self.scale_x = self.initial_scale
-        self.scale_z = self.initial_scale
-
-    def update(self):
-        """Main game update loop"""
-        if not self.input_enabled:
-            return
-
-
 
 def pause_input(key):
     if key == 'tab':    # press tab to toggle edit/play mode
@@ -144,30 +123,7 @@ orchestra.append(drum)
 orchestra.append(bass)
 orchestra.append(trumpet)
 orchestra.append(trumpet2)
-        
 
-
-"""
-def spawn_musicians(radius, height, count, group):
-    center = Vec3(0,height,-10)
-    start_angle = math.radians(20)
-    end_angle = math.radians(160)
-    for i in range(count):
-        angle = start_angle + (end_angle - start_angle) * i / (count - 1)
-        x = center.x + radius * math.cos(angle)
-        z = center.z + radius * math.sin(angle)
-        group.append(Musician(player, x=x, z=z, y=center.y))
-    return group
-
-
-drum = []
-bass = []
-trumpet = []
-
-
-# Spawn 5 enemies in a smaller semicircle and 10 in a larger semicircle
-
-"""
 pause_handler = Entity(ignore_paused=True, input=pause_input)
 
 
