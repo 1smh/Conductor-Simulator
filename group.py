@@ -39,11 +39,11 @@ class Group():
             
     def determineAudio(self, beat_align):
         if not self.active_musicians:
+            print("group dead")
             return [0.0, 0.0]
         active_count = len(self.active_musicians)
         for musician in self.active_musicians:
             if not musician.active:
-                print("removing inactive musician")
                 self.active_musicians.remove(musician)
         total_count = len(self.musicians)
 

@@ -114,7 +114,6 @@ class Note(Entity):
         self.scale_x = self.initial_scale
         self.scale_z = self.initial_scale
 
->>>>>>> Stashed changes
     def update(self):
         """Main game update loop"""
         if not self.input_enabled:

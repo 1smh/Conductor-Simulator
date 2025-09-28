@@ -40,7 +40,6 @@ class Musician(Entity):
         # print(hit_info.entity)
 
         if not self.active:
-            print("im dead")
             return
             
         # Check for bad actor status every 5 seconds instead of every frame
@@ -103,7 +102,6 @@ class Musician(Entity):
             self.bad_actor = False
             self.color = color.black
             self.scale = (0.5, 0.5, 0.5)
-            print("dead")
             return
 
         self.health_bar.world_scale_x = self.hp / self.max_hp * 1.5
