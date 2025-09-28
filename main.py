@@ -172,7 +172,7 @@ class Note(Entity):
 # Spawn 5 enemies in a smaller semicircle and 10 in a larger semicircle
 import math
 
-def spawn_musicians(radius, height, count):
+def spawn_musicians(radius, height, count, group):
     center = Vec3(0,height,-10)
     start_angle = math.radians(20)
     end_angle = math.radians(160)
@@ -180,13 +180,17 @@ def spawn_musicians(radius, height, count):
         angle = start_angle + (end_angle - start_angle) * i / (count - 1)
         x = center.x + radius * math.cos(angle)
         z = center.z + radius * math.sin(angle)
-        Musician(x=x, z=z, y=center.y)
+        group.append(Musician(x=x, z=z, y=center.y))
+
+drum = []
+bass = []
+trumpet = []
 
 # Spawn 5 enemies in a smaller semicircle and 10 in a larger semicircle
-spawn_musicians(9, -6.5, 8)
-spawn_musicians(12, -6.5, 9)
-spawn_musicians(15, -6, 12)
-spawn_musicians(18, -6, 13)
+spawn_musicians(9, -6.5, 8, drum)
+spawn_musicians(12, -6.5, 9, bass)
+spawn_musicians(15, -6, 12, trumpet)
+spawn_musicians(18, -6, 13, trumpet)
 
 def pause_input(key):
     if key == 'tab':    # press tab to toggle edit/play mode
