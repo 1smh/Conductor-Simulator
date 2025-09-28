@@ -8,7 +8,7 @@ app = Ursina()
 random.seed(0)
 Entity.default_shader = lit_with_shadows_shader
 
-ground = Entity(model='concerthallv3', collider='box', position=(318,-15,650), scale=32, texture='grass', texture_scale=(4,4), rotation=(180,0,0))
+ground = Entity(model='concerthallv3', collider='box', position=(-150.66,-5,-310.66), scale=15, texture='grass', texture_scale=(4,4), rotation=(0,0,180))
 
 editor_camera = EditorCamera(enabled=False, ignore_paused=True)
 player = FirstPersonController(model='cube', z=-10, color=color.orange, origin_y=-.5, speed=8, collider='box')
@@ -64,7 +64,7 @@ def update():
                 health_bar.world_scale_x = 0.1
             update.tempo_window_allowed = False
             tempoMarker.enabled = False
-            camera.shake(duration=0.2, magnitude=0.4)
+            camera.shake(duration=0.2, magnitude=0.6)
         elif held_keys['right mouse']:
             update.tempo_window_allowed = False
             tempoMarker.color = color.green
@@ -170,7 +170,7 @@ class Note(Entity):
 # Spawn 5 enemies in a smaller semicircle and 10 in a larger semicircle
 import math
 
-def spawn_enemies(radius, count):
+def spawn_musicians(radius, count):
     center = Vec3(0,0,0)
     for i in range(count):
         angle = math.pi * i / (count-1)  # 0 to pi
@@ -179,10 +179,10 @@ def spawn_enemies(radius, count):
         Musician(x=x, z=z)
 
 # Spawn 5 enemies in a smaller semicircle and 10 in a larger semicircle
-spawn_enemies(6, 6)
-spawn_enemies(8, 9)
-spawn_enemies(10, 10)
-spawn_enemies(12, 15)
+spawn_musicians(6, 6)
+spawn_musicians(8, 9)
+spawn_musicians(10, 10)
+spawn_musicians(12, 15)
 
 def pause_input(key):
     if key == 'tab':    # press tab to toggle edit/play mode
