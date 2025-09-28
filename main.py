@@ -8,11 +8,13 @@ app = Ursina()
 random.seed(0)
 Entity.default_shader = lit_with_shadows_shader
 
-ground = Entity(model='concerthallv3', collider='box', position=(-150.66,-5,-310.66), scale=15, texture='grass', texture_scale=(4,4), rotation=(0,0,180))
+ground = Entity(model='concerthallv3', position=(-150.75,-5,-310.75), scale=15, texture='grass', texture_scale=(4,4), rotation=(0,0,180))
+ground.collider = 'mesh'
 
 editor_camera = EditorCamera(enabled=False, ignore_paused=True)
-player = FirstPersonController(model='cube', z=-10, color=color.orange, origin_y=-.5, speed=8, collider='box')
-player.collider = BoxCollider(player, Vec3(0,1,0), Vec3(1,2,1))
+player = FirstPersonController(model='cube', position=(0,10,-10), color=color.orange, origin_y=-.5, speed=0)
+#player.collider = BoxCollider(player, Vec3(0,1,0), Vec3(1,2,1))
+# player.gravity = False
 
 gun = Entity(model='cube', parent=camera, position=(.2,-.25,.25), scale=(.01,.01,1.5), rotation=(0,10,0), origin_z=-.5, color=color.black, on_cooldown=False)
 gun.muzzle_flash = Entity(parent=gun, z=1, world_scale=.5, model='quad', color=color.yellow, enabled=False)
@@ -26,11 +28,11 @@ health_bar.world_scale_x = 15
 health_bar.alpha = 1
 
 def spawn_conductor_platform():
-    platform = Entity(model='cube', scale=(2,2,4), color=color.gray, position=(0,1,-6), collider='box')
+    platform = Entity(model='cube', scale=(2,2,4), color=color.gray, position=(0,1,-6))
     platform_top = Entity(parent=platform, model='cube', scale=(1,0.2,1), color=color.light_gray, position=(0,.6,0), texture='white_cube', texture_scale=(4,4))
     podium = Entity(parent=platform, model='cube', scale=(0.5,0.5,0.25), color=color.brown, position=(0,0.9,0.3), texture='white_cube', texture_scale=(4,4), rotation=(0,0,0))
     
-spawn_conductor_platform()
+# spawn_conductor_platform()
 
 def update():
     if held_keys['left mouse']:
