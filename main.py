@@ -71,7 +71,7 @@ class Musician(Entity):
         self.health_bar.alpha = max(0, self.health_bar.alpha - time.dt)
 
         self.look_at_2d(player.position, 'y')
-        hit_info = raycast(self.world_position + Vec3(0,1,0), self.forward, 30, ignore=(self,))
+        # hit_info = raycast(self.world_position + Vec3(0,1,0), self.forward, 30, ignore=(self,))
         # print(hit_info.entity)
         
     @property
