@@ -48,18 +48,15 @@ class Group():
         total_count = len(self.musicians)
 
         current_volume = active_count / total_count 
-        
         offsets = 0
         bad_actor_count = 0
         
         for musician in self.active_musicians:
+            musician.improve_performance(beat_align)
             if musician.active:
                 offsets += musician.get_audio_offset()
-                
-                if musician.bad_actor:
-                    bad_actor_count += 1
-        offsets = min(((1 - offsets/max(1, bad_actor_count)) + beat_align), 1) # maximum 1 = no alignment / speed diff
-        # print("Offsets:", offsets, "Bad Actors:", bad_actor_count, "Active:", active_count, "Total:", total_count, "Volume:", current_volume)
+        offsets = min((offsets/len(self.active_musicians)), 1) # avg offset * how many
+        #print("Offsets:", offsets, "Bad Actors:", bad_actor_count, "Active:", active_count, "Total:", total_count, "Volume:", current_volume)
         
         return [current_volume, offsets]
     

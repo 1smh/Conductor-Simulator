@@ -17,16 +17,15 @@ class Musician(Entity):
         #chris
          # Musician state
         self.bad_actor = False
+        self.last_bad_actor_check = 0.0
+        self.bad_actor_check_interval = 0.5  # seconds
+        self.performance = 1.0  # 1.0 = perfect, 0.0 = terrible
+        self.bad_actor_threshold = random.uniform(1.0, 5.0)
+
         self.active = True
-        self.performance_quality = 1.0  # 1.0 = perfect, 0.0 = terrible
         
-        # Bad actor timing - check every 5 seconds instead of every frame
-        self.bad_actor_probability = 0.2  # 20% chance every 5 seconds
-        self.last_bad_actor_check = 0
-        self.bad_actor_check_interval = 5.0  # Check every 5 seconds
-        
-        # Performance drift (how much they can drift from perfect timing)
-        self.drift_factor = 0.0  # Will be modified by bad actor status
+        self.fumble = 0
+
 
     # def update(self):
     #     self.look_at_2d(player.position, 'y')
@@ -44,48 +43,44 @@ class Musician(Entity):
             
         # Check for bad actor status every 5 seconds instead of every frame
         current_time = time.time()
+        # print("Fumble:", self.fumble, "Bad Actor Threshold:", self.bad_actor_threshold)
         if current_time - self.last_bad_actor_check >= self.bad_actor_check_interval:
-            if random.random() < self.bad_actor_probability and not self.bad_actor:
+            # print("Fumble:", self.fumble, "Bad Actor Threshold:", self.bad_actor_threshold)
+            if self.bad_actor_threshold <= self.fumble and not self.bad_actor:
+                #print("bad")
                 self.become_bad_actor()
+            elif self.fumble < self.bad_actor_threshold and self.bad_actor:
+                self.bad_actor = False  # Recover from bad actor status
+                self.fumble = 0  # Reset fumble on recovery
             self.last_bad_actor_check = current_time
             
         # Visual feedback for bad actors
         if self.bad_actor:
             # Make bad actors more visually obvious
             self.color = color.red
+        else :
+            self.color = color.light_gray
+        
     def become_bad_actor(self):
+        self.performance = random.uniform(0.0, 0.5)
         self.bad_actor = True
-        self.performance_quality = random.uniform(0.1, 0.5)  # Poor performance
-        self.drift_factor = random.uniform(0.5, 2.0)  # High drift from perfect timing
-        #print(f"Musician {self.group_id}-{self.musician_id} became a bad actor!")
-    def improve_performance(self):
-        """Improve musician performance (called when conductor intervenes)"""
-        self.performance_quality = min(1.0, self.performance_quality + 0.2)
-        self.drift_factor = max(0.0, self.drift_factor - 0.1)
+        self.color=color.red
+
+    def improve_performance(self, beatAlign):
+        if(beatAlign > 0):
+            if not self.bad_actor:
+                self.performance = 1.0
+            self.fumble -= beatAlign
+        else:
+            self.fumble += 0.5
+        
+
         
     def get_audio_offset(self):
         """Calculate how much this musician's audio should be offset"""
         if not self.active:
             return 0.0
-            
-        # Bad actors create more offset
-        if self.bad_actor:
-            # Random offset based on drift factor
-            offset = random.uniform(-self.drift_factor, self.drift_factor)
-            return offset * (1.0 - self.performance_quality)
-        else:
-            # Good musicians have minimal offset
-            return random.uniform(-0.1, 0.1) * (1.0 - self.performance_quality)
-    
-    def get_volume_multiplier(self):
-        """Get volume multiplier based on performance"""
-        if not self.active:
-            return 0.0
-        return self.performance_quality
-    
-        #print(f"Musician {self.group_id}-{self.musician_id} removed from orchestra")
-        
-
+        return self.performance
 
 
     @property

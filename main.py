@@ -8,7 +8,17 @@ from group import Group
 import audioManager as am
 app = Ursina()
 
+
+
 random.seed(0)
+window.render_mode = '3d'
+light = DirectionalLight(y=10, z=-3, rotation=(45, -45, 0))
+light.look_at(Vec3(0, 1, 1)) # Point the light at the center of the scene
+light = DirectionalLight(y=10, z=-3, rotation=(45, -45, 0))
+light.look_at(Vec3(0, -1, -1)) # Point the light at the center of the scene
+light = DirectionalLight(y=10, z=-3, rotation=(45, -45, 0))
+light.look_at(Vec3(1, 1, 0)) # Point the light at the center of the scene
+
 Entity.default_shader = lit_with_shadows_shader
 
 ground = Entity(model='concerthallv3', position=(-150.75,-5,-310.75), scale=15, texture='grass', texture_scale=(4,4), rotation=(0,0,180))
@@ -34,15 +44,81 @@ def spawn_conductor_platform():
     platform_top = Entity(parent=platform, model='cube', scale=(1,0.2,1), color=color.light_gray, position=(0,.6,0), texture='white_cube', texture_scale=(4,4))
     podium = Entity(parent=platform, model='cube', scale=(0.5,0.5,0.25), color=color.brown, position=(0,0.9,0.3), texture='white_cube', texture_scale=(4,4), rotation=(0,0,0))
     
+time_remaining = 30  # seconds
+level_start_time = time.time()
+
+def update_timer():
+    """Update game timer"""
+    elapsed_time = time.time() - level_start_time
+    global time_remaining
+    time_remaining = max(0, 60 - elapsed_time)
+    
+
+def defeat(reason):
+    Text(
+            "CONCERT FAILED: " + reason,
+            scale=1.5,
+            origin=(0, 0),
+            color=color.red
+        )
+
+def victory():
+    Text(
+            "CONCERT SUCCESS!",
+            scale=1.5,
+            origin=(0, 0),
+            color=color.green
+        )
+
+
 # spawn_conductor_platform()
+def checkWin():
+    # Check if time is up
+        if time_remaining <= 0:
+            if health_bar.world_scale_x >= 0.1:
+                victory()
+            else:
+                defeat("Orchestra out of sync!")
+            return
+            
+        # Check if too many musicians removed
+        total_active = sum(len(group.active_musicians) for group in orchestra)
+        total_musicians = sum(len(group.musicians) for group in orchestra)
+        
+        if total_active < 1/2 * len(orchestra):
+            defeat("Too many musicians removed!")
+            return
+            
+        # Check if any group has too few musicians
+        for group in orchestra:
+            if len(group.active_musicians) < 1:
+                defeat(f"Group {group.group_id} has no musicians left!")
+                return
+                
+        # Check if everyone is a bad actor
+        total_active = sum(len(group.active_musicians) for group in orchestra)
+        total_bad_actors = sum(group.get_bad_actor_count() for group in orchestra)
+        
+        if total_active > 0 and total_bad_actors + 10 >= total_active:
+            defeat("All musicians became bad actors! Concert failed!")
+            return
+
+global tempoOffset
+tempoOffset = 0.0
+global leftPressed 
+leftPressed = False
+global lastTimePressed
+lastTimePressed = 0.0
 
 def update():
+    checkWin()
+
     if held_keys['q']:
         shoot()
 
     # Configurable variables
     TEMPO_RATE = 1          # seconds between tempo windows
-    TEMPO_WINDOW = 0.2      # seconds `window to react
+    TEMPO_WINDOW = 0.5     # seconds `window to react
     HEALTH_DECREASE = 1     # amount to decrease health
 
     if not hasattr(update, 'tempo_window_timer'):
@@ -62,6 +138,9 @@ def update():
         tempoMarker.scale = ((1 - (time.time() - update.tempo_window_opened) / TEMPO_WINDOW)/2,
                              (1 - (time.time() - update.tempo_window_opened) / TEMPO_WINDOW)/2,
                              (1 - (time.time() - update.tempo_window_opened) / TEMPO_WINDOW)/2)
+        global tempoOffset
+        global lastTimePressed
+        global leftPressed
         if time.time() - update.tempo_window_opened > TEMPO_WINDOW:
             health_bar.world_scale_x -= HEALTH_DECREASE
             if health_bar.world_scale_x <= 0:
@@ -69,20 +148,37 @@ def update():
             update.tempo_window_allowed = False
             tempoMarker.enabled = False
             camera.shake(duration=0.2, magnitude=0.6)
-        elif held_keys['left mouse']:
+            tempoOffset = 0.0
+
+            offsets = []
+            for group in orchestra:
+                offsets.append(group.determineAudio(tempoOffset)) #beat align is currently 0.0
+            am.determineAudio(offsets) 
+
+            print("beatHitfail!")
+            print("Tempo Offset (failed):", tempoOffset)
+        elif held_keys['left mouse'] and not leftPressed:
             update.tempo_window_allowed = False
             tempoMarker.color = color.green
-    
+            tempoOffset = TEMPO_WINDOW-update.tempo_window_timer
+            
+            offsets = []
+            for group in orchestra:
+                offsets.append(group.determineAudio(tempoOffset)) #beat align is currently 0.0
+            am.determineAudio(offsets) 
+            print("beatHit! ")
+
+            leftPressed = True
+            lastTimePressed = time.time()
+            print("Tempo Offset:", tempoOffset)
+    if(time.time() - lastTimePressed > 0.3):
+        leftPressed = False
     # if not hasattr(update, 'note_timer'):
     #     update.note_timer = 0
     # update.note_timer += time.dt
     # if update.note_timer > random.uniform(0.5, 1):  # spawn every 1 second
     #     Note(x=random.uniform(-20,20), z=random.uniform(2,10), y=random.uniform(4,20))
     #     update.note_timer = 0
-    offsets = []
-    for group in orchestra:
-        offsets.append(group.determineAudio(0.0)) #beat align is currently 0.0
-    am.determineAudio(offsets) 
 
 
 #repurpose for selecting musicians
@@ -102,7 +198,7 @@ def shoot():
         # health_bar.world_scale_x += 5
 
 
-
+ 
 class Note(Entity):
     def __init__(self, **kwargs):
         model_choice = random.choice(['uploads_files_2463307_Note+Eight', 'uploads_files_2463288_Eighth+note'])
@@ -118,6 +214,7 @@ class Note(Entity):
         """Main game update loop"""
         if not self.input_enabled:
             return
+
 
 
 
