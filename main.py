@@ -12,12 +12,12 @@ app = Ursina()
 
 random.seed(0)
 window.render_mode = '3d'
-light = DirectionalLight(y=10, z=-3, rotation=(45, -45, 0))
-light.look_at(Vec3(0, 1, 1)) # Point the light at the center of the scene
-light = DirectionalLight(y=10, z=-3, rotation=(45, -45, 0))
-light.look_at(Vec3(0, -1, -1)) # Point the light at the center of the scene
-light = DirectionalLight(y=10, z=-3, rotation=(45, -45, 0))
-light.look_at(Vec3(1, 1, 0)) # Point the light at the center of the scene
+# light = DirectionalLight(y=10, z=-3, rotation=(45, -45, 0))
+# light.look_at(Vec3(0, 1, 1)) # Point the light at the center of the scene
+# light = DirectionalLight(y=10, z=-3, rotation=(45, -45, 0))
+# light.look_at(Vec3(0, -1, -1)) # Point the light at the center of the scene
+# light = DirectionalLight(y=10, z=-3, rotation=(45, -45, 0))
+# light.look_at(Vec3(1, 1, 0)) # Point the light at the center of the scene
 
 Entity.default_shader = lit_with_shadows_shader
 
