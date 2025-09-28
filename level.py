@@ -4,8 +4,9 @@ Level class - Main game level with orchestra management and victory conditions.
 
 from ursina import *
 from group import Group
-from audioManager import AudioManager
 from imageManager import ImageManager
+import audioManager
+import deprecatedAudioManager 
 import random
 import statistics
 
@@ -19,7 +20,7 @@ class Level(Entity):
         self.level_start_time = time.time()
         
         # Game balance settings
-        self.beat_align = 0.3  # How much conductor intervention helps
+        self.beat_align = 1  # How much conductor intervention helps
         self.offsetness_threshold = 5.0  # Maximum allowed offset
         self.min_musicians = 3  # Minimum musicians per group to continue
         
@@ -28,7 +29,6 @@ class Level(Entity):
         self.offsetness = 0.0
         
         # Managers
-        self.audio_manager = AudioManager()
         self.image_manager = ImageManager()
         
         # UI elements
@@ -45,14 +45,13 @@ class Level(Entity):
         # Create orchestra groups
         self.setup_orchestra()
         
-        # Setup audio tracks
-        self.setup_audio()
         
         # Setup UI
         self.setup_ui()
         
         # Start the level
         self.start_level()
+        audioManager.start()
         
     def setup_stage(self):
         """Create the stage environment"""
@@ -78,16 +77,16 @@ class Level(Entity):
         """Create the orchestra groups in semicircle formation"""
         # Group configurations - position doesn't matter much since musicians are arranged in semicircle
         group_configs = [
-            {'id': 'A', 'musicians': 6, 'instrument': 'drums'},
-            {'id': 'B', 'musicians': 5, 'instrument': 'trumpet'},
-            {'id': 'C', 'musicians': 4, 'instrument': 'bass'},
+            {'group_id':'A', 'musicians': 6, 'instrument': 'drums'},
+            {'group_id':'B','musicians': 5, 'instrument': 'trumpet'},
+            {'group_id':'C','musicians': 4, 'instrument': 'bass'},
         ]
         
         self.concert = []
         
         for config in group_configs:
             group = Group(
-                group_id=config['id'],
+                group_id=config['group_id'],
                 num_musicians=config['musicians'],
                 width=3,
                 length=2,
@@ -95,14 +94,6 @@ class Level(Entity):
             )
             self.concert.append(group)
             
-    def setup_audio(self):
-        """Setup audio tracks for each group"""
-        for group in self.concert:
-            self.audio_manager.start_track(
-                group_id=group.group_id,
-                volume=0.6,
-                pitch=1.0
-            )
             
     def setup_ui(self):
         """Setup game UI elements"""
@@ -155,15 +146,14 @@ class Level(Entity):
         """Main level update loop"""
         # Update timer
         self.update_timer()
-        
+
         # Update orchestra
         self.update_orchestra()
+
         
         # Handle synchronization input
         self.handle_synchronization()
         
-        # Update audio
-        self.update_audio()
         
         # Update UI
         self.update_ui()
@@ -184,16 +174,10 @@ class Level(Entity):
             group.update()
             
             # Calculate audio settings for this group
-            group_offset = group.determine_audio(self.beat_align)
+            group_offset = group.determineAudio(self.beat_align)
             group_offsets.append(group_offset)
-            
-        # Calculate overall offsetness as standard deviation instead of average
-        if len(group_offsets) > 1:
-            self.offsetness = statistics.stdev(group_offsets)
-        elif len(group_offsets) == 1:
-            self.offsetness = group_offsets[0]
-        else:
-            self.offsetness = 0.0
+        
+        audioManager.determineAudio(group_offsets)
         
     def handle_synchronization(self):
         """Handle space key for synchronization"""
@@ -221,20 +205,7 @@ class Level(Entity):
             wave.animate_color(color.clear, duration=1.0)
             destroy(wave, delay=1.0)
             
-    def update_audio(self):
-        """Update audio based on group performance"""
-        for group in self.concert:
-            # Get group performance metrics
-            volume_multiplier = len(group.active_musicians) / len(group.musicians)
-            offset_factor = group.audio_offset
-            
-            # Update audio track
-            self.audio_manager.update_track_properties(
-                group_id=group.group_id,
-                volume_multiplier=volume_multiplier,
-                pitch_multiplier=1.0,
-                offset_factor=offset_factor
-            )
+    
             
     def update_ui(self):
         """Update UI elements"""
@@ -251,14 +222,15 @@ class Level(Entity):
         # Group status
         status_lines = []
         for group in self.concert:
-            active = group.get_active_count()
-            total = group.get_total_count()
+            active = len(group.active_musicians)
+            total = len(group.musicians)
             bad_actors = group.get_bad_actor_count()
             status_lines.append(f"Group {group.group_id}: {active}/{total} ({bad_actors} bad)")
             
         self.group_status_text.text = "\n".join(status_lines)
         
     def check_victory_conditions(self):
+        
         """Check win/lose conditions"""
         # Check if time is up
         if self.time_remaining <= 0:
@@ -269,8 +241,8 @@ class Level(Entity):
             return
             
         # Check if too many musicians removed
-        total_active = sum(group.get_active_count() for group in self.concert)
-        total_musicians = sum(group.get_total_count() for group in self.concert)
+        total_active = sum(len(group.active_musicians) for group in self.concert)
+        total_musicians = sum(len(group.musicians) for group in self.concert)
         
         if total_active < self.min_musicians * len(self.concert):
             self.defeat("Too many musicians removed!")
@@ -278,12 +250,12 @@ class Level(Entity):
             
         # Check if any group has too few musicians
         for group in self.concert:
-            if group.get_active_count() < 1:
+            if len(group.active_musicians) < 1:
                 self.defeat(f"Group {group.group_id} has no musicians left!")
                 return
                 
         # Check if everyone is a bad actor
-        total_active = sum(group.get_active_count() for group in self.concert)
+        total_active = sum(len(group.active_musicians) for group in self.concert)
         total_bad_actors = sum(group.get_bad_actor_count() for group in self.concert)
         
         if total_active > 0 and total_bad_actors == total_active:
@@ -295,7 +267,7 @@ class Level(Entity):
         #print("Victory! Concert was successful!")
         
         # Stop all audio
-        self.audio_manager.stop_all_tracks()
+        audioManager.stop()
         
         # Show victory message
         victory_text = Text(
@@ -314,7 +286,7 @@ class Level(Entity):
         print(f"Defeat! {reason}")
         
         # Stop all audio
-        self.audio_manager.stop_all_tracks()
+        audioManager.stop()
         
         # Show defeat message
         defeat_text = Text(
@@ -353,7 +325,7 @@ class Level(Entity):
             self.backdrop.disable()
             
         # Clean up audio
-        self.audio_manager.cleanup()
+        audioManager.stop()
         
         # Clean up level entity
         self.disable()

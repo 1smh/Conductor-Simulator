@@ -1,31 +1,21 @@
 """
 Player class - The conductor character with camera controls and interaction abilities.
+Uses FirstPersonController prefab with static y level for conductor positioning.
 """
 
 from ursina import *
+from ursina.prefabs.first_person_controller import FirstPersonController
 from imageManager import ImageManager
-import math
 
-class Player(Entity):
-    def __init__(self, position=(0, 2, -12)):  # Lowered position, behind the orchestra
-        super().__init__()
-        
-        # Player properties
-        self.position = position
-        self.speed = 5.0
-        
-        # Camera properties
-        self.camera_height = 8  # Lowered camera height
-        self.camera_distance = 15  # Distance from player
-        self.mouse_sensitivity = 100  # Mouse sensitivity for rotation
-        self.camera_rotation_x = 0
-        self.camera_rotation_y = 0
+class Player(FirstPersonController):
+    def __init__(self, position=(0,0,0)):  # Position behind the orchestra
+        # Initialize FirstPersonController with conductor-specific settings
+        super().__init__(gravity=0, mouse_sensitivity=Vec2(40, 40))
+        # Store original y position for static y level
+        # self.static_y = position[1]
         
         # Visual representation
         self.setup_visual()
-        
-        # Camera setup (third-person view)
-        self.setup_camera()
         
         # Interaction properties
         self.interaction_range = 10.0
@@ -38,8 +28,11 @@ class Player(Entity):
         # Conductor baton (visual feedback)
         self.setup_baton()
         
-        # Mouse capture for camera control
-        self.mouse_captured = False
+        # Set window title
+        window.title = "One-Armed Band - Conductor"
+        
+        # Track window size for resize detection
+        self._last_window_size = window.size if hasattr(window, 'size') else None
         
     def setup_visual(self):
         """Set up the visual representation of the conductor"""
@@ -53,18 +46,10 @@ class Player(Entity):
             self.color = color.gold
             
         self.scale = (0.8, 0.8, 0.8)
-        
+        self.position = (0, 5, -20)  # Start position behind orchestra
         # Add collider
         self.collider = 'box'
         
-    def setup_camera(self):
-        """Set up the camera for third-person view"""
-        # Position camera behind and above the player
-        camera.position = (self.position.x, self.position.y + self.camera_height, self.position.z + self.camera_distance)
-        camera.rotation_x = -20  # Slight downward angle to see the orchestra
-        
-        # Don't parent camera to player - we'll control it manually
-        camera.parent = None
         
     def setup_baton(self):
         """Set up conductor baton for visual feedback"""
@@ -72,7 +57,7 @@ class Player(Entity):
             parent=self,
             model='cube',
             scale=(0.1, 0.1, 1.0),
-            position=(0.5, 0.5, 0),
+            position=self.position,
             color=color.white,
             rotation=(0, 0, 45)
         )
@@ -81,16 +66,35 @@ class Player(Entity):
         self.baton_base_rotation = 45
         self.baton_animation_time = 0
         
+    def input(self, key):
+        # Handle escape key to exit cursor (unlock mouse)
+        if key == 'escape':
+            mouse.locked = not mouse.locked
+            return  # Don't call super().input() to prevent other escape handling
+        
+        # Handle left mouse click to re-lock cursor when unlocked
+        if key == 'left mouse down' and not mouse.locked:
+            mouse.locked = True
+            mouse.position = (0, 0)  # Reset mouse to center
+            return
+        
+        # Let parent FirstPersonController handle other keys
+        super().input(key)
+                
+    
     def update(self):
-        """Update player state each frame"""
-        # Handle mouse capture for camera control
-        self.handle_mouse_capture()
+        # Call parent update for standard FirstPersonController behavior
+        super().update()
         
-        # Handle camera rotation with mouse
-        self.handle_camera_rotation()
+        # Keep y position static (override any gravity or movement)
+        self.y = 5  # Keep at fixed height
         
-        # Handle movement (limited in conductor role)
-        self.handle_movement()
+        # Keep conductor in front of stage area (movement constraints)
+        self.x = max(-32, min(32, self.x))
+        self.z = max(-24, min(24, self.z))
+        
+        # Handle window resize detection (continuous monitoring)
+        self.handle_window_resize()
         
         # Handle interactions
         self.handle_interactions()
@@ -98,49 +102,16 @@ class Player(Entity):
         # Animate baton
         self.animate_baton()
         
-        # Update camera position
-        self.update_camera()
-        
-    def handle_mouse_capture(self):
-        """Handle mouse capture for camera control"""
-        # Toggle mouse capture with right mouse button
-        if mouse.right:
-            if not self.mouse_captured:
-                self.mouse_captured = True
-                mouse.locked = True
-        else:
-            if self.mouse_captured:
-                self.mouse_captured = False
-                mouse.locked = False
-                
-    def handle_camera_rotation(self):
-        """Handle camera rotation with mouse input"""
-        if self.mouse_captured:
-            # Get mouse movement
-            mouse_movement = mouse.velocity
-            
-            # Apply rotation based on mouse movement
-            self.camera_rotation_y += mouse_movement[0] * self.mouse_sensitivity * time.dt
-            self.camera_rotation_x -= mouse_movement[1] * self.mouse_sensitivity * time.dt
-            
-            # Clamp vertical rotation
-            self.camera_rotation_x = max(-80, min(80, self.camera_rotation_x))
-            
-    def handle_movement(self):
-        """Handle player movement (limited movement for conductor)"""
-        # Conductor moves slightly to get better view/position
-        if held_keys['a'] or held_keys['left arrow']:
-            self.x -= self.speed * time.dt
-        if held_keys['d'] or held_keys['right arrow']:
-            self.x += self.speed * time.dt
-        if held_keys['w'] or held_keys['up arrow']:
-            self.z += self.speed * time.dt
-        if held_keys['s'] or held_keys['down arrow']:
-            self.z -= self.speed * time.dt
-            
-        # Keep player in front of stage area
-        self.x = max(-32, min(32, self.x))
-        self.z = max(-24, min(24, self.z))
+    def handle_window_resize(self):
+        """Handle window resize events"""
+        if hasattr(window, 'size') and hasattr(self, '_last_window_size'):
+            if window.size != self._last_window_size:
+                if mouse.locked:
+                    mouse.position = (0, 0)
+                    mouse.velocity = Vec2(0, 0)
+                # Update the tracking variable to prevent repeated resize detection
+                self._last_window_size = window.size
+                print("Window resized - mouse position reset")
         
     def handle_interactions(self):
         """Handle player interactions"""
@@ -157,49 +128,15 @@ class Player(Entity):
             
     def kill(self):
         """Fire a raycast and remove bad musicians"""
-        # Use raycast from camera through mouse position for targeting
-        if mouse.world_point:
-            # Find entities near the mouse world point
-            hit_entities = []
-            
-            # Check all entities in scene
-            for entity in scene.entities:
-                if hasattr(entity, 'bad_actor') and entity.bad_actor and entity.active:
-                    # Check if entity is within interaction range of the mouse cursor
-                    distance = distance_2d(entity.world_position, mouse.world_point)
-                    if distance < 3.0:  # Within range for targeting
-                        hit_entities.append(entity)
-            
-            # Remove the closest bad actor
-            if hit_entities:
-                closest = min(hit_entities, key=lambda e: distance_2d(e.world_position, mouse.world_point))
-                self.remove_musician(closest)
-                
-                # Visual feedback
-                self.show_removal_effect(closest.world_position)
-        else:
-            # Fallback: if no mouse world point, try to find bad actors in front of camera
-            # Create a raycast from camera forward
-            camera_forward = Vec3(0, 0, 1) * camera.rotation
-            hit_entities = []
-            
-            for entity in scene.entities:
-                if hasattr(entity, 'bad_actor') and entity.bad_actor and entity.active:
-                    # Check if entity is in front of camera and within range
-                    entity_direction = (entity.world_position - camera.world_position).normalized()
-                    dot_product = entity_direction.dot(camera_forward)
-                    
-                    if dot_product > 0.7:  # Entity is roughly in front of camera
-                        distance = distance_3d(entity.world_position, camera.world_position)
-                        if distance < 20.0:  # Within range
-                            hit_entities.append((entity, distance))
-            
-            # Remove the closest bad actor
-            if hit_entities:
-                closest = min(hit_entities, key=lambda e: e[1])[0]
-                self.remove_musician(closest)
-                self.show_removal_effect(closest.world_position)
-                
+        # Use FirstPersonController's camera for targeting
+        # Create a raycast from camera forward
+        if mouse.hovered_entity:
+            target = mouse.hovered_entity
+            if hasattr(target, 'bad_actor'):
+                self.remove_musician(target)
+                self.show_removal_effect(target.world_position)
+            else:
+                print("No bad musician targeted!")
     def remove_musician(self, musician):
         """Remove a musician from the orchestra"""
         if hasattr(musician, 'remove_from_orchestra'):
@@ -251,6 +188,7 @@ class Player(Entity):
         
     def animate_baton(self):
         """Animate the conductor baton"""
+        self.baton.position = self.position
         if self.baton_animation_time > 0:
             # Animate baton during conductor actions
             self.baton_animation_time -= time.dt * 2
@@ -267,30 +205,6 @@ class Player(Entity):
             self.baton.rotation_z = self.baton_base_rotation
             self.baton.scale = (0.1, 0.1, 1.0)
             
-    def update_camera(self):
-        """Update camera position and rotation"""
-        # Calculate camera position based on player position and rotation
-        # Convert rotation to radians
-        rotation_y_rad = math.radians(self.camera_rotation_y)
-        rotation_x_rad = math.radians(self.camera_rotation_x)
-        
-        # Calculate camera offset based on rotation
-        offset_x = math.sin(rotation_y_rad) * self.camera_distance
-        offset_z = math.cos(rotation_y_rad) * self.camera_distance
-        offset_y = self.camera_height + math.sin(rotation_x_rad) * self.camera_distance * 0.3
-        
-        # Set camera position
-        target_position = (
-            self.position.x - offset_x,
-            self.position.y + offset_y,
-            self.position.z - offset_z
-        )
-        
-        camera.world_position = lerp(camera.world_position, target_position, time.dt * 5)
-        
-        # Set camera rotation to look at the player
-        camera.rotation_y = self.camera_rotation_y
-        camera.rotation_x = self.camera_rotation_x
         
     def get_interaction_targets(self):
         """Get all interactable entities within range"""

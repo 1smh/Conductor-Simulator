@@ -92,9 +92,8 @@ class Game(Entity):
         if not self.input_enabled:
             return
             
-        # Handle basic GUI interactions
-        if held_keys['escape']:
-            self.pause_game()
+        # Handle basic GUI interactions (but let player handle escape key)
+        # Escape key handling is now managed by the player for cursor control
             
         # Handle game state specific updates
         if self.state == GameState.GAME and self.level:
@@ -175,8 +174,7 @@ def main():
     from panda3d.core import ConfigVariableManager, ConfigVariableString, ConfigVariableInt, ConfigVariableBool
     
     # Set proper window configuration
-    ConfigVariableInt('win-size').setValue(1152)
-    ConfigVariableInt('win-size').setValue(720)
+    # Note: win-size should be set as a single value or use separate width/height variables
     ConfigVariableBool('undecorated').setValue(False)
     
     # Force lower GLSL version for compatibility
@@ -192,8 +190,7 @@ def main():
     # Initialize Ursina with proper settings
     app = Ursina(
         title="One-Armed Band", 
-        fullscreen=False,
-        size=(1152, 720),  # Explicit window size
+        fullscreen=False,  # Explicit window size
         borderless=False   # Explicit window decoration
     )
     

@@ -103,7 +103,7 @@ class Musician(Entity):
         self.performance_quality = min(1.0, self.performance_quality + 0.2)
         self.drift_factor = max(0.0, self.drift_factor - 0.1)
         
-    def get_audio_offset(self, base_bpm, beat_align):
+    def get_audio_offset(self):
         """Calculate how much this musician's audio should be offset"""
         if not self.active:
             return 0.0
@@ -127,8 +127,8 @@ class Musician(Entity):
         """Remove this musician from the orchestra"""
         self.active = False
         self.bad_actor = False
-        self.color = color.gray
-        self.scale = (0.3, 0.3, 0.3)
+        self.color = color.black
+        self.scale = (0.5, 0.5, 0.5)
         #print(f"Musician {self.group_id}-{self.musician_id} removed from orchestra")
         
     def on_mouse_enter(self):
