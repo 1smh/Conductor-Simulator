@@ -64,6 +64,7 @@ def update():
                 health_bar.world_scale_x = 0.1
             update.tempo_window_allowed = False
             tempoMarker.enabled = False
+            camera.shake(duration=0.2, magnitude=0.4)
         elif held_keys['right mouse']:
             update.tempo_window_allowed = False
             tempoMarker.color = color.green
