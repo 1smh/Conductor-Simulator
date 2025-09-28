@@ -12,7 +12,7 @@ ground = Entity(model='concerthallv3', position=(-150.75,-5,-310.75), scale=15, 
 ground.collider = 'mesh'
 
 editor_camera = EditorCamera(enabled=False, ignore_paused=True)
-player = FirstPersonController(model='cube', position=(0,10,-10), color=color.orange, origin_y=-.5, speed=0)
+player = FirstPersonController(model='cube', position=(0,100,-10), color=color.orange, origin_y=-.5, speed=0)
 #player.collider = BoxCollider(player, Vec3(0,1,0), Vec3(1,2,1))
 # player.gravity = False
 
@@ -121,7 +121,7 @@ class Musician(Entity):
     def hp(self, value):
         self._hp = value
         if value <= 0:
-            destroy(self)
+            self.disable()
             return
 
         self.health_bar.world_scale_x = self.hp / self.max_hp * 1.5
