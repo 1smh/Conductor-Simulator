@@ -14,7 +14,7 @@ class Musician(Entity):
         self.health_bar = Entity(parent=self, y=1.2, model='cube', color=color.red, world_scale=(1.5,.1,.1))
         self.max_hp = 1
         self.hp = self.max_hp
-        self.instrument = Entity(parent=self, model='violinprefab', position=(-0.4,0.8,1), scale=0.05, rotation=(-80,90,-60))
+        self.instrument = Entity(parent=self, model='model/violinprefab', position=(-0.4,0.8,1), scale=0.05, rotation=(-80,90,-60))
         #chris
          # Musician state
         self.bad_actor = False

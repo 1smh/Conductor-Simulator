@@ -11,7 +11,7 @@ app = Ursina()
 random.seed(0)
 Entity.default_shader = lit_with_shadows_shader
 
-ground = Entity(model='concerthallv3', position=(-150.75,-5,-310.75), scale=15, texture='grass', texture_scale=(4,4), rotation=(0,0,180))
+ground = Entity(model='models/concerthallv3', position=(-150.75,-5,-310.75), scale=15, texture='grass', texture_scale=(4,4), rotation=(0,0,180))
 ground.collider = 'mesh'
 
 editor_camera = EditorCamera(enabled=False, ignore_paused=True)
