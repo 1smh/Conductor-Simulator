@@ -2,20 +2,27 @@
 Group class - Manages a group of musicians with shared audio and positioning.
 """
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 from ursina import *
 =======
+=======
+>>>>>>> Stashed changes
 from ursina import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 from ursina.shaders import lit_with_shadows_shader
 from ursina.prefabs.ursfx import ursfx
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 from musician import Musician
 import random
 import statistics
 import math
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 class Group(Entity):
     def __init__(self, group_id, num_musicians=5, width=3, length=2, position=(0, 0, 0)):
@@ -27,6 +34,8 @@ class Group(Entity):
         self.length = length
         self.active_musicians = []
 =======
+=======
+>>>>>>> Stashed changes
 class Group():
 
     def __init__(self, radius, height, count, group):
@@ -47,11 +56,15 @@ class Group():
         self.group_id = group
         self.num_musicians = count
         
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         # Musician management
         # self.target_bpm = audioManager.alltracks[track]["bpm"]
         # self.current_bpm = self.target_bpm
         
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
         # Group area visualization
         self.setup_group_area()
@@ -125,17 +138,26 @@ class Group():
 =======
         
 >>>>>>> Stashed changes
+=======
+        
+>>>>>>> Stashed changes
             
     def determineAudio(self, beat_align):
         if not self.active_musicians:
             return [0.0, 0.0]
         active_count = len(self.active_musicians)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
         for musician in self.active_musicians:
             if not musician.active:
                 print("removing inactive musician")
                 self.active_musicians.remove(musician)
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         total_count = len(self.musicians)
 
@@ -169,6 +191,7 @@ class Group():
     
     def update(self):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         """Update group state"""
         # Update all active musicians
         for musician in self.active_musicians:
@@ -186,10 +209,15 @@ class Group():
             if not musician.active:
                 self.active_musicians.remove(musician)
 =======
+=======
+>>>>>>> Stashed changes
         # Update all active musicians
         for musician in self.active_musicians:
             musician.update()
         
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             
     def cleanup(self):
@@ -201,7 +229,11 @@ class Group():
             self.platform.disable()
         if hasattr(self, 'label'):
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             self.label.disable()
+=======
+            self.label.disable()
+>>>>>>> Stashed changes
 =======
             self.label.disable()
 >>>>>>> Stashed changes

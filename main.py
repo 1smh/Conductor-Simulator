@@ -3,6 +3,7 @@ One-Armed Band - Conductor Game
 Main entry point for the game with title screen and scene management.
 """
 
+<<<<<<< Updated upstream
 from ursina import *
 from level import Level
 from player import Player
@@ -89,6 +90,8 @@ class Game(Entity):
         print("Game started!")
         
 =======
+=======
+>>>>>>> Stashed changes
 from group import Group
 
 import audioManager as am
@@ -283,6 +286,7 @@ class Note(Entity):
         )
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def main():
     """Main entry point"""
     # Configure Panda3D settings to avoid warnings
@@ -322,6 +326,9 @@ if __name__ == "__main__":
     main()
 =======
 
+=======
+
+>>>>>>> Stashed changes
 
 def pause_input(key):
     if key == 'tab':    # press tab to toggle edit/play mode

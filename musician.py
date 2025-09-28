@@ -1,4 +1,5 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 """
 Musician class - Individual musician entities that can become bad actors.
 """
@@ -18,6 +19,8 @@ class Musician(Entity):
         
         # Musician state
 =======
+=======
+>>>>>>> Stashed changes
 from ursina import *
 from ursina.prefabs.health_bar import HealthBar
 from ursina.prefabs.first_person_controller import FirstPersonController
@@ -36,6 +39,9 @@ class Musician(Entity):
         self.instrument = Entity(parent=self, model='violinprefab', position=(-0.4,0.8,1), scale=0.05, rotation=(-80,90,-60))
         #chris
          # Musician state
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         self.bad_actor = False
         self.active = True
@@ -48,6 +54,7 @@ class Musician(Entity):
         
         # Performance drift (how much they can drift from perfect timing)
         self.drift_factor = 0.0  # Will be modified by bad actor status
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
         
         # Image manager for fallback graphics
@@ -93,6 +100,8 @@ class Musician(Entity):
         """Update musician state each frame"""
         if not self.active:
 =======
+=======
+>>>>>>> Stashed changes
 
     # def update(self):
     #     self.look_at_2d(player.position, 'y')
@@ -107,6 +116,9 @@ class Musician(Entity):
 
         if not self.active:
             print("im dead")
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
             return
             
@@ -122,6 +134,7 @@ class Musician(Entity):
             # Make bad actors more visually obvious
             self.color = color.red
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             # Add slight pulsing effect
             self.scale = (0.6, 0.6, 0.6) + (sin(time.time() * 10) * 0.1, 
                                            sin(time.time() * 10) * 0.1, 
@@ -135,12 +148,18 @@ class Musician(Entity):
 =======
     def become_bad_actor(self):
 >>>>>>> Stashed changes
+=======
+    def become_bad_actor(self):
+>>>>>>> Stashed changes
         self.bad_actor = True
         self.performance_quality = random.uniform(0.1, 0.5)  # Poor performance
         self.drift_factor = random.uniform(0.5, 2.0)  # High drift from perfect timing
         #print(f"Musician {self.group_id}-{self.musician_id} became a bad actor!")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     def improve_performance(self):
@@ -169,6 +188,7 @@ class Musician(Entity):
         return self.performance_quality
     
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     def remove_from_orchestra(self):
         """Remove this musician from the orchestra"""
         self.active = False
@@ -187,6 +207,8 @@ class Musician(Entity):
         if self.active:
             self.color = self.original_color if not self.bad_actor else color.red
 =======
+=======
+>>>>>>> Stashed changes
         #print(f"Musician {self.group_id}-{self.musician_id} removed from orchestra")
         
 
@@ -211,5 +233,9 @@ class Musician(Entity):
 
         self.health_bar.world_scale_x = self.hp / self.max_hp * 1.5
         self.health_bar.alpha = 1
+<<<<<<< Updated upstream
+    
+>>>>>>> Stashed changes
+=======
     
 >>>>>>> Stashed changes
