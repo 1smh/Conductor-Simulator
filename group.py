@@ -59,7 +59,7 @@ class Group():
                 if musician.bad_actor:
                     bad_actor_count += 1
         offsets = min(((1 - offsets/max(1, bad_actor_count)) + beat_align), 1) # maximum 1 = no alignment / speed diff
-        print("Offsets:", offsets, "Bad Actors:", bad_actor_count, "Active:", active_count, "Total:", total_count, "Volume:", current_volume)
+        # print("Offsets:", offsets, "Bad Actors:", bad_actor_count, "Active:", active_count, "Total:", total_count, "Volume:", current_volume)
         
         return [current_volume, offsets]
     
