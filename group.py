@@ -1,13 +1,22 @@
 """
 Group class - Manages a group of musicians with shared audio and positioning.
 """
+<<<<<<< Updated upstream
 
 from ursina import *
+=======
+from ursina import *
+from ursina.prefabs.first_person_controller import FirstPersonController
+from ursina.shaders import lit_with_shadows_shader
+from ursina.prefabs.ursfx import ursfx
+
+>>>>>>> Stashed changes
 from musician import Musician
 import random
 import statistics
 import math
 
+<<<<<<< Updated upstream
 class Group(Entity):
     def __init__(self, group_id, num_musicians=5, width=3, length=2, position=(0, 0, 0)):
         super().__init__()
@@ -17,10 +26,33 @@ class Group(Entity):
         self.width = width
         self.length = length
         self.active_musicians = []
+=======
+class Group():
+
+    def __init__(self, radius, height, count, group):
+        center = Vec3(0,height,-10)
+        start_angle = math.radians(20)
+        end_angle = math.radians(160)
+        self.musicians = []
+        self.active_musicians = []
+
+        for i in range(count):
+            angle = start_angle + (end_angle - start_angle) * i / (count - 1)
+            x = center.x + radius * math.cos(angle)
+            z = center.z + radius * math.sin(angle)
+            newMusician = Musician(x=x, z=z, y=center.y)
+            self.musicians.append(newMusician)
+            self.active_musicians.append(newMusician)
+        
+        self.group_id = group
+        self.num_musicians = count
+        
+>>>>>>> Stashed changes
         # Musician management
         # self.target_bpm = audioManager.alltracks[track]["bpm"]
         # self.current_bpm = self.target_bpm
         
+<<<<<<< Updated upstream
         # Group area visualization
         self.setup_group_area()
         
@@ -90,11 +122,21 @@ class Group(Entity):
             
             self.musicians.append(musician)
             self.active_musicians.append(musician)
+=======
+        
+>>>>>>> Stashed changes
             
     def determineAudio(self, beat_align):
         if not self.active_musicians:
             return [0.0, 0.0]
         active_count = len(self.active_musicians)
+<<<<<<< Updated upstream
+=======
+        for musician in self.active_musicians:
+            if not musician.active:
+                print("removing inactive musician")
+                self.active_musicians.remove(musician)
+>>>>>>> Stashed changes
         total_count = len(self.musicians)
 
         current_volume = active_count / total_count 
@@ -126,6 +168,7 @@ class Group(Entity):
         return total_performance / len(self.active_musicians)
     
     def update(self):
+<<<<<<< Updated upstream
         """Update group state"""
         # Update all active musicians
         for musician in self.active_musicians:
@@ -142,6 +185,12 @@ class Group(Entity):
         for musician in self.active_musicians:
             if not musician.active:
                 self.active_musicians.remove(musician)
+=======
+        # Update all active musicians
+        for musician in self.active_musicians:
+            musician.update()
+        
+>>>>>>> Stashed changes
             
     def cleanup(self):
         """Clean up group resources"""
@@ -151,4 +200,8 @@ class Group(Entity):
         if hasattr(self, 'platform'):
             self.platform.disable()
         if hasattr(self, 'label'):
+<<<<<<< Updated upstream
             self.label.disable()
+=======
+            self.label.disable()
+>>>>>>> Stashed changes

@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 """
 Musician class - Individual musician entities that can become bad actors.
 """
@@ -16,6 +17,26 @@ class Musician(Entity):
         self.musician_id = musician_id
         
         # Musician state
+=======
+from ursina import *
+from ursina.prefabs.health_bar import HealthBar
+from ursina.prefabs.first_person_controller import FirstPersonController
+
+
+shootables_parent = Entity()
+mouse.traverse_target = shootables_parent
+
+class Musician(Entity):
+    
+    def __init__(self,  **kwargs ):
+        super().__init__(parent=shootables_parent, model='cube', scale_y=2, origin_y=-.5, color=color.light_gray, collider='box', **kwargs)
+        self.health_bar = Entity(parent=self, y=1.2, model='cube', color=color.red, world_scale=(1.5,.1,.1))
+        self.max_hp = 1
+        self.hp = self.max_hp
+        self.instrument = Entity(parent=self, model='violinprefab', position=(-0.4,0.8,1), scale=0.05, rotation=(-80,90,-60))
+        #chris
+         # Musician state
+>>>>>>> Stashed changes
         self.bad_actor = False
         self.active = True
         self.performance_quality = 1.0  # 1.0 = perfect, 0.0 = terrible
@@ -27,6 +48,7 @@ class Musician(Entity):
         
         # Performance drift (how much they can drift from perfect timing)
         self.drift_factor = 0.0  # Will be modified by bad actor status
+<<<<<<< Updated upstream
         
         # Image manager for fallback graphics
         self.image_manager = ImageManager()
@@ -70,6 +92,22 @@ class Musician(Entity):
     def update(self):
         """Update musician state each frame"""
         if not self.active:
+=======
+
+    # def update(self):
+    #     self.look_at_2d(player.position, 'y')
+
+    def update(self):
+        self.player = Entity( position=(0,100,-10), origin_y=-.5, speed=0)
+
+        self.health_bar.alpha = max(0, self.health_bar.alpha - time.dt)
+        self.look_at_2d(self.player.position, 'y')
+        # hit_info = raycast(self.world_position + Vec3(0,1,0), self.forward, 30, ignore=(self,))
+        # print(hit_info.entity)
+
+        if not self.active:
+            print("im dead")
+>>>>>>> Stashed changes
             return
             
         # Check for bad actor status every 5 seconds instead of every frame
@@ -83,6 +121,7 @@ class Musician(Entity):
         if self.bad_actor:
             # Make bad actors more visually obvious
             self.color = color.red
+<<<<<<< Updated upstream
             # Add slight pulsing effect
             self.scale = (0.6, 0.6, 0.6) + (sin(time.time() * 10) * 0.1, 
                                            sin(time.time() * 10) * 0.1, 
@@ -93,11 +132,17 @@ class Musician(Entity):
             
     def become_bad_actor(self):
         """Make this musician a bad actor"""
+=======
+    def become_bad_actor(self):
+>>>>>>> Stashed changes
         self.bad_actor = True
         self.performance_quality = random.uniform(0.1, 0.5)  # Poor performance
         self.drift_factor = random.uniform(0.5, 2.0)  # High drift from perfect timing
         #print(f"Musician {self.group_id}-{self.musician_id} became a bad actor!")
+<<<<<<< Updated upstream
         
+=======
+>>>>>>> Stashed changes
     def improve_performance(self):
         """Improve musician performance (called when conductor intervenes)"""
         self.performance_quality = min(1.0, self.performance_quality + 0.2)
@@ -123,6 +168,7 @@ class Musician(Entity):
             return 0.0
         return self.performance_quality
     
+<<<<<<< Updated upstream
     def remove_from_orchestra(self):
         """Remove this musician from the orchestra"""
         self.active = False
@@ -140,3 +186,30 @@ class Musician(Entity):
         """Handle mouse exit"""
         if self.active:
             self.color = self.original_color if not self.bad_actor else color.red
+=======
+        #print(f"Musician {self.group_id}-{self.musician_id} removed from orchestra")
+        
+
+
+
+    @property
+    def hp(self):
+        return self._hp
+
+    #upon setting hp anytime it appears this would run
+    @hp.setter
+    def hp(self, value):
+        self._hp = value
+        if value <= 0:
+
+            self.active = False
+            self.bad_actor = False
+            self.color = color.black
+            self.scale = (0.5, 0.5, 0.5)
+            print("dead")
+            return
+
+        self.health_bar.world_scale_x = self.hp / self.max_hp * 1.5
+        self.health_bar.alpha = 1
+    
+>>>>>>> Stashed changes

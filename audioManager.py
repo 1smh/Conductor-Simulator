@@ -5,14 +5,23 @@ from ursina import Audio
 track1 = {
     "groupA": "drumsA.wav",
     "groupB": "trumpetB.wav",
+<<<<<<< Updated upstream
     "groupC": "bassC.wav"
+=======
+    "groupC": "bassC.wav",
+    "groupD": "trumpetB.wav"
+>>>>>>> Stashed changes
 }
 alltracks = {
     "track1": track1
 }
 audioFolder = "audio"
 
+<<<<<<< Updated upstream
 order = ["groupA", "groupB", "groupC"]
+=======
+order = ["groupA", "groupB", "groupC", "groupD"]
+>>>>>>> Stashed changes
 
 audio_cache = {}
 active_tracks = {}
