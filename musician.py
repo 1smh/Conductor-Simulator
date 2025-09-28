@@ -70,7 +70,7 @@ class Musician(Entity):
         if(beatAlign > 0):
             if not self.bad_actor:
                 self.performance = 1.0
-            self.fumble -= beatAlign
+            self.fumble = max(0, (self.fumble - beatAlign))
         else:
             self.fumble += 0.5
         
