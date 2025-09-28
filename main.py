@@ -16,6 +16,7 @@ player.collider = BoxCollider(player, Vec3(0,1,0), Vec3(1,2,1))
 
 gun = Entity(model='cube', parent=camera, position=(.2,-.25,.25), scale=(.01,.01,1.5), rotation=(0,10,0), origin_z=-.5, color=color.black, on_cooldown=False)
 gun.muzzle_flash = Entity(parent=gun, z=1, world_scale=.5, model='quad', color=color.yellow, enabled=False)
+tempoMarker = Entity(model="sphere", parent=camera, position = (0,0,5), color=color.red, scale=(1,1,1), enabled=False)
 
 shootables_parent = Entity()
 mouse.traverse_target = shootables_parent
@@ -35,25 +36,37 @@ def update():
     if held_keys['left mouse']:
         shoot()
 
+    # Configurable variables
+    TEMPO_RATE = 1          # seconds between tempo windows
+    TEMPO_WINDOW = 0.2      # seconds window to react
+    HEALTH_DECREASE = 1     # amount to decrease health
+
     if not hasattr(update, 'tempo_window_timer'):
         update.tempo_window_timer = 0
         update.tempo_window_allowed = False
 
     update.tempo_window_timer += time.dt
 
-    if update.tempo_window_timer >= 1:
+    if update.tempo_window_timer >= TEMPO_RATE:
         update.tempo_window_allowed = True
         update.tempo_window_timer = 0
         update.tempo_window_opened = time.time()
 
     if update.tempo_window_allowed:
-        if time.time() - update.tempo_window_opened > 0.1:
-            health_bar.world_scale_x -= 1
+        tempoMarker.enabled = True
+        tempoMarker.color = color.red
+        tempoMarker.scale = ((1 - (time.time() - update.tempo_window_opened) / TEMPO_WINDOW)/2,
+                             (1 - (time.time() - update.tempo_window_opened) / TEMPO_WINDOW)/2,
+                             (1 - (time.time() - update.tempo_window_opened) / TEMPO_WINDOW)/2)
+        if time.time() - update.tempo_window_opened > TEMPO_WINDOW:
+            health_bar.world_scale_x -= HEALTH_DECREASE
             if health_bar.world_scale_x <= 0:
-                health_bar.world_scale_x = 0.0001
+                health_bar.world_scale_x = 0.1
             update.tempo_window_allowed = False
+            tempoMarker.enabled = False
         elif held_keys['right mouse']:
             update.tempo_window_allowed = False
+            tempoMarker.color = color.green
     
     # if not hasattr(update, 'note_timer'):
     #     update.note_timer = 0
