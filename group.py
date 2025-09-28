@@ -19,6 +19,8 @@ class Group():
         end_angle = math.radians(160)
         self.musicians = []
         self.active_musicians = []
+        self.audioTime = 0.1
+        self.speed = 1.0
 
         for i in range(count):
             angle = start_angle + (end_angle - start_angle) * i / (count - 1)
@@ -27,7 +29,7 @@ class Group():
             newMusician = Musician(x=x, z=z, y=center.y)
             self.musicians.append(newMusician)
             self.active_musicians.append(newMusician)
-        
+
         self.group_id = group
         self.num_musicians = count
         
@@ -37,7 +39,7 @@ class Group():
         
         
             
-    def determineAudio(self, beat_align):
+    def determineAudio(self, beat_align, global_time):
         if not self.active_musicians:
             print("group dead")
             return [0.0, 0.0]
@@ -56,9 +58,15 @@ class Group():
             if musician.active:
                 offsets += musician.get_audio_offset()
         offsets = min((offsets/len(self.active_musicians)), 1) # avg offset * how many
+        if(self.get_bad_actor_count() == 0):
+            offsets = 6969 # reduce volume by up to 50% based on bad actors
+            self.speed = global_time/self.audioTime
+        else:
+            self.speed *= offsets
+        
         #print("Offsets:", offsets, "Bad Actors:", bad_actor_count, "Active:", active_count, "Total:", total_count, "Volume:", current_volume)
         
-        return [current_volume, offsets]
+        return [current_volume, offsets, self.speed]
     
     def get_bad_actor_count(self):
         """Get number of bad actors in the group"""
@@ -76,6 +84,7 @@ class Group():
         # Update all active musicians
         for musician in self.active_musicians:
             musician.update()
+        self.audioTime += time.dt*self.speed
         
             
     def cleanup(self):

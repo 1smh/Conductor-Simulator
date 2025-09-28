@@ -151,9 +151,10 @@ def update():
             tempoOffset = 0.0
 
             offsets = []
+            timeNow = time.time()
             for group in orchestra:
-                offsets.append(group.determineAudio(tempoOffset)) #beat align is currently 0.0
-            am.determineAudio(offsets) 
+                offsets.append(group.determineAudio(tempoOffset, timeNow)) #beat align is currently 0.0
+            am.determineAudio(offsets, timeNow)
 
             print("beatHitfail!")
             print("Tempo Offset (failed):", tempoOffset)
@@ -163,9 +164,10 @@ def update():
             tempoOffset = TEMPO_WINDOW-update.tempo_window_timer
             
             offsets = []
+            timeNow = time.time()
             for group in orchestra:
-                offsets.append(group.determineAudio(tempoOffset)) #beat align is currently 0.0
-            am.determineAudio(offsets) 
+                offsets.append(group.determineAudio(tempoOffset, timeNow)) #beat align is currently 0.0
+            am.determineAudio(offsets, timeNow)
             print("beatHit! ")
 
             leftPressed = True
@@ -214,9 +216,6 @@ class Note(Entity):
         """Main game update loop"""
         if not self.input_enabled:
             return
-
-
-
 
 def pause_input(key):
     if key == 'tab':    # press tab to toggle edit/play mode

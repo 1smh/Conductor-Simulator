@@ -21,8 +21,6 @@ active_tracks = {}
 master_volume = 1.0  # Global master volume
 """Note: audio folder REQUIRED"""
 
-
-
 def start():
     for i in order:
         load_audio("track1", i)
@@ -49,9 +47,12 @@ def setVolume(volume):
         
         for track in list(active_tracks.keys()):
             track.volume = track.volume * master_volume
-def determineAudio(audioList): # [[volume, offset], [volume, offset]]
+def determineAudio(audioList, trueTime): # [[volume, offset], [volume, offset]]
     for i in range(3):
-        change_track_speed(order[i], audioList[i][1])
+        if audioList[i][1] != 6969:
+            change_track_speed(order[i], audioList[i][1])
+        else:
+            change_track_speed(order[i], trueTime/audioList[i][2])
         change_track_volume(order[i], audioList[i][0])
 
 
