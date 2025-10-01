@@ -80,7 +80,11 @@ class Musician(Entity):
         """Calculate how much this musician's audio should be offset"""
         if not self.active:
             return 0.0
-        return self.performance
+        try:
+            val = float(self.performance)
+        except Exception:
+            val = 0.0
+        return max(0.0, min(1.0, val))
 
 
     @property
@@ -101,4 +105,3 @@ class Musician(Entity):
 
         self.health_bar.world_scale_x = self.hp / self.max_hp * 1.5
         self.health_bar.alpha = 1
-    

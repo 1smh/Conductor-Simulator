@@ -110,6 +110,8 @@ leftPressed = False
 global lastTimePressed
 lastTimePressed = 0.0
 
+
+
 def update():
     checkWin()
 
@@ -153,28 +155,34 @@ def update():
             offsets = []
             timeNow = time.time()
             for group in orchestra:
-                offsets.append(group.determineAudio(tempoOffset, timeNow)) #beat align is currently 0.0
-            am.determineAudio(offsets, timeNow)
+                offsets.append(group.determineAudio(tempoOffset)) #beat align is currently 0.0
+            am.determineAudio(offsets)
 
-            print("beatHitfail!")
-            print("Tempo Offset (failed):", tempoOffset)
+            #print("beatHitfail!")
+            #print("Tempo Offset (failed):", tempoOffset)
         elif held_keys['left mouse'] and not leftPressed:
             update.tempo_window_allowed = False
             tempoMarker.color = color.green
             tempoOffset = TEMPO_WINDOW-update.tempo_window_timer
             
             offsets = []
-            timeNow = time.time()
             for group in orchestra:
-                offsets.append(group.determineAudio(tempoOffset, timeNow)) #beat align is currently 0.0
-            am.determineAudio(offsets, timeNow)
-            print("beatHit! ")
+                offsets.append(group.determineAudio(tempoOffset)) #beat align is currently 0.0
+            am.determineAudio(offsets)
+            #print("beatHit! ")
 
             leftPressed = True
             lastTimePressed = time.time()
-            print("Tempo Offset:", tempoOffset)
+            #print("Tempo Offset:", tempoOffset)
     if(time.time() - lastTimePressed > 0.3):
         leftPressed = False
+
+    # advance audio manager transitions each frame
+    try:
+        am.update(time.dt)
+    except Exception:
+        # safety: if am.update isn't available or errors, ignore
+        pass
     # if not hasattr(update, 'note_timer'):
     #     update.note_timer = 0
     # update.note_timer += time.dt
@@ -204,7 +212,10 @@ def shoot():
 class Note(Entity):
     def __init__(self, **kwargs):
         model_choice = random.choice(['uploads_files_2463307_Note+Eight', 'uploads_files_2463288_Eighth+note'])
-        super().__init__(parent=shootables_parent, model=model_choice, origin_y=-.5, color=color.cyan, collider='box', **kwargs)
+        # shootables_parent is defined in musician.py; use globals lookup to avoid
+        # static analysis errors if not yet imported.
+        parent_obj = globals().get('shootables_parent', None)
+        super().__init__(parent=parent_obj, model=model_choice, origin_y=-.5, color=color.cyan, collider='box', **kwargs)
         self.max_hp = 1
         self.hp = self.max_hp
         self.initial_scale = 0.5
@@ -231,6 +242,12 @@ def pause_input(key):
 
 #chris
 am.start()
+# Configure beat duration from BPM so audio catch-ups use real beat timing
+BPM = 60  # beats per minute, adjust to match your track
+try:
+    am.set_beat_duration(60.0 / float(BPM))
+except Exception:
+    pass
 orchestra = []
 drum = Group(9, -6.5, 8, "drumA")
 bass = Group(12, -6.5, 9, "bassC")
