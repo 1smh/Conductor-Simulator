@@ -14,7 +14,7 @@ class ImageManager:
         # Create images directory if it doesn't exist
         if not os.path.exists(self.images_folder):
             os.makedirs(self.images_folder)
-            print(f"Created images directory: {self.images_folder}")
+            # print"Created images directory: {self.images_folder}")
             
         # Create fallback textures
         self.create_fallback_textures()
@@ -61,7 +61,7 @@ class ImageManager:
                     self.texture_cache[image_name] = texture
                     return texture
                 except Exception as e:
-                    print(f"Failed to load texture {alt_path}: {e}")
+                    prin# printled to load texture {alt_path}: {e}")
         
         # Use fallback
         fallback = fallback_name or image_name

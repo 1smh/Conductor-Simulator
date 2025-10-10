@@ -1,201 +1,191 @@
-"""
-AudioManager - Manages audio tracks for different instrument groups.
-"""
-
 import os
-import pygame
+import time
 from ursina import Audio
-import random
 
-class AudioManager:
-    def __init__(self, audios_folder="audios"):
-        self.audios_folder = audios_folder
-        self.audio_cache = {}
-        self.active_tracks = {}
-        
-        # Initialize pygame mixer for audio control
-        pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
-        
-        # Create audios directory if it doesn't exist
-        if not os.path.exists(self.audios_folder):
-            os.makedirs(self.audios_folder)
-            # print(f"Created audios directory: {self.audios_folder}")
-            
-        # Default audio settings
-        self.base_bpm = 120.0
-        self.master_volume = 0.7
-        
-        # Audio track configurations for the 3 groups
-        self.track_configs = {
-            'A': {'volume': 0.8, 'pitch_range': (0.8, 1.2), 'file': 'drums_A.mp3'},
-            'B': {'volume': 0.6, 'pitch_range': (0.9, 1.1), 'file': 'trumpet_B.mp3'},
-            'C': {'volume': 0.7, 'pitch_range': (0.85, 1.15), 'file': 'bass_C.mp3'}
-        }
-        
-    def load_audio(self, group_id):
-        """Load the specific music file for a group"""
-        if group_id not in self.track_configs:
-            # print(f"Invalid group ID: {group_id}")
-            return self.create_silent_audio()
-            
-        audio_file = self.track_configs[group_id]['file']
-        audio_path = os.path.join(self.audios_folder, audio_file)
-        
-        if os.path.exists(audio_path):
-            try:
-                # Use Ursina's Audio class
-                audio = Audio(audio_path, loop=True, autoplay=False)
-                self.audio_cache[group_id] = audio
-                return audio
-            except Exception as e:
-                print(f"Failed to load audio {audio_path}: {e}")
 
-        # Create silent audio as fallback
-        #print(f"No audio file found for group {group_id} ({audio_file}), using silent fallback")
-        return self.create_silent_audio()
-    
-    def create_silent_audio(self):
-        """Create a silent audio track as fallback"""
-        # Return a dummy audio object that does nothing
-        class SilentAudio:
-            def __init__(self):
-                self.volume = 0
-                self.pitch = 1.0
-                self.playing = False
-                
-            def play(self):
-                self.playing = True
-                
-            def stop(self):
-                self.playing = False
-                
-            def pause(self):
-                self.playing = False
-                
-            def resume(self):
-                self.playing = True
-                
-        return SilentAudio()
-    
-    def get_track_for_group(self, group_id):
-        """Get the audio track for a specific group"""
-        if group_id in self.audio_cache:
-            return self.audio_cache[group_id]
-            
-        # Load the specific music file for this group
-        audio = self.load_audio(group_id)
-        return audio
-    
-    def start_track(self, group_id, volume=1.0, pitch=1.0):
-        """Start playing an audio track for a group"""
-        track = self.get_track_for_group(group_id)
-        
-        # Set audio properties
-        track.volume = volume * self.master_volume
-        track.pitch = pitch
-        
-        # Start playing
+track1 = {
+    "groupA": "drumsA.wav",
+    "groupB": "trumpetB.wav",
+    "groupC": "bassC.wav",
+    "groupD": "trumpetB.wav"
+}
+alltracks = {
+    "track1": track1
+}
+audioFolder = "audio"
+
+order = ["groupA", "groupB", "groupC", "groupD"]
+
+audio_cache = {}
+active_tracks = {}
+
+master_volume = 1.0  # Global master volume
+"""Note: audio folder REQUIRED"""
+
+# How long a beat is, in seconds. Can be changed by the game if needed.
+beat_duration = 1.0
+
+# pitch transition map: group -> {start_time, duration, start_pitch, target_pitch}
+pitch_transitions = {}
+
+def start():
+    for i in order:
+        load_audio("track1", i)
+
+    for group in order:
+        track = audio_cache.get(group)
+        # track.volume = volume * master_volume
+        # track.pitch = pitch
         track.play()
-        
-        # Store active track info
-        self.active_tracks[group_id] = {
-            'track': track,
-            'base_volume': volume,
-            'base_pitch': pitch
-        }
-        
-    def stop_track(self, group_id):
-        """Stop playing an audio track for a group"""
-        if group_id in self.active_tracks:
-            self.active_tracks[group_id]['track'].stop()
-            del self.active_tracks[group_id]
-            
-    def pause_track(self, group_id):
-        """Pause an audio track"""
-        if group_id in self.active_tracks:
-            self.active_tracks[group_id]['track'].pause()
-            
-    def resume_track(self, group_id):
-        """Resume a paused audio track"""
-        if group_id in self.active_tracks:
-            self.active_tracks[group_id]['track'].resume()
-            
-    def update_track_properties(self, group_id, volume_multiplier=1.0, pitch_multiplier=1.0, 
-                               offset_factor=0.0):
-        """Update track properties based on group performance"""
-        if group_id not in self.active_tracks:
-            return
-            
-        track_info = self.active_tracks[group_id]
-        track = track_info['track']
-        
-        # Apply volume changes
-        base_volume = track_info['base_volume']
-        track.volume = (base_volume * volume_multiplier * self.master_volume)
-        
-        # Apply pitch/tempo changes based on offset
-        base_pitch = track_info['base_pitch']
-        pitch_variation = offset_factor * 0.2  # Scale offset to pitch variation
-        track.pitch = base_pitch + pitch_variation
-        
-    def slow_down_track(self, group_id, factor=0.9):
-        """Slow down a track (reduce pitch)"""
-        if group_id in self.active_tracks:
-            current_pitch = self.active_tracks[group_id]['base_pitch']
-            new_pitch = max(0.5, current_pitch * factor)
-            self.active_tracks[group_id]['track'].pitch = new_pitch
-            self.active_tracks[group_id]['base_pitch'] = new_pitch
-            
-    def speed_up_track(self, group_id, factor=1.1):
-        """Speed up a track (increase pitch)"""
-        if group_id in self.active_tracks:
-            current_pitch = self.active_tracks[group_id]['base_pitch']
-            new_pitch = min(2.0, current_pitch * factor)
-            self.active_tracks[group_id]['track'].pitch = new_pitch
-            self.active_tracks[group_id]['base_pitch'] = new_pitch
-            
-    def set_master_volume(self, volume):
+        active_tracks[group] = track
+def pause():
+    for track in list(active_tracks.values()):
+        track.pause()
+def resume():
+    for track in list(active_tracks.values()):
+        track.resume()
+def stop():
+    for track in list(active_tracks.values()):
+        track.stop() 
+def setVolume(volume):
         """Set master volume for all tracks"""
-        self.master_volume = max(0.0, min(1.0, volume))
+        global master_volume
+        master_volume = max(0.0, min(1.0, volume))
         
-        # Update all active tracks
-        for group_id, track_info in self.active_tracks.items():
-            track = track_info['track']
-            track.volume = track_info['base_volume'] * self.master_volume
-            
-    def stop_all_tracks(self):
-        """Stop all active tracks"""
-        for group_id in list(self.active_tracks.keys()):
-            self.stop_track(group_id)
-            
-    def pause_all_tracks(self):
-        """Pause all active tracks"""
-        for track_info in self.active_tracks.values():
-            track_info['track'].pause()
-            
-    def resume_all_tracks(self):
-        """Resume all active tracks"""
-        for track_info in self.active_tracks.values():
-            track_info['track'].resume()
-            
-    def get_active_track_count(self):
-        """Get number of currently active tracks"""
-        return len(self.active_tracks)
-        
-    def list_available_audio(self):
-        """List all available audio files"""
-        if not os.path.exists(self.audios_folder):
-            return []
-            
-        audio_files = []
-        for file in os.listdir(self.audios_folder):
-            if file.lower().endswith(('.mp3', '.wav', '.ogg', '.m4a')):
-                audio_files.append(file)
-                
-        return audio_files
-        
-    def cleanup(self):
-        """Clean up audio resources"""
-        self.stop_all_tracks()
-        pygame.mixer.quit()
-        
+        for track in list(active_tracks.keys()):
+            # scale each track's volume relative to master
+            active_tracks[track].volume = active_tracks[track].volume * master_volume
+def determineAudio(audioList):
+    """Apply desired volume and pitch per-group.
+
+    audioList is expected to be an array of [volume, offset] per group.
+    We interpret offset as a desired pitch (0.0 - 1.0). If a pitch drop
+    occurs (new pitch < 1.0), we schedule a catch-up transition that will
+    bring the track back into sync within 2 beats.
+    """
+    for i in range(len(order)):
+        group_key = order[i]
+        vol, desired_pitch = audioList[i][0], audioList[i][1]
+
+        # clamp
+        try:
+            desired_pitch = float(desired_pitch)
+        except Exception:
+            desired_pitch = 1.0
+        desired_pitch = max(0.0, min(2.0, desired_pitch))
+
+        # set the requested volume (relative)
+        change_track_volume(group_key, vol)
+
+        # set the immediate pitch to the desired value
+        change_track_speed(group_key, desired_pitch)
+
+        # if the pitch dropped below normal, schedule a timed catch-up so
+        # the track will be able to re-align to normal speed/time within 2 beats
+        if desired_pitch < 1.0:
+            schedule_catchup(group_key, from_pitch=desired_pitch)
+
+        print("group", group_key, "requested_pitch", desired_pitch, "current_pitch", active_tracks[group_key].pitch)
+
+    
+
+def load_audio(track, group):
+    audio_file = alltracks[track][group]
+    audio_path = os.path.join(audioFolder, audio_file)
+    print("loading")
+    audio = Audio(audio_path, loop=True, autoplay=False)
+    # initialize sensible defaults
+    audio.pitch = 1.0
+    audio.volume = 1.0
+    audio_cache[group] = audio
+    print(f"Loaded audio for {group} from {audio_path}")
+    return audio #failsafes are for losers
+
+
+def change_track_volume(group, factor = 1.0):
+    """Set track volume as a multiplier (0..1). Keeps existing volume as base.
+    If factor is a relative (0..1), set volume = base * factor. If factor >1, allow it.
+    """
+    if group not in active_tracks:
+        return
+    try:
+        active_tracks[group].volume = float(factor)
+    except Exception:
+        pass
+
+
+def change_track_speed(group, factor=1.0):
+    """Set absolute pitch for a track. This replaces the old multiplicative
+    behaviour and makes pitch transitions deterministic.
+    """
+    if group not in active_tracks:
+        return
+    try:
+        active_tracks[group].pitch = float(factor)
+    except Exception:
+        pass
+
+
+def schedule_catchup(group, from_pitch=None, beats=2):
+    """When a track's pitch drops, schedule a transition that will bring it
+    back into sync (pitch=1.0) within `beats` beats. We create a brief
+    overshoot above 1.0 so the track can catch up in time as well as speed.
+    """
+    if group not in active_tracks:
+        return
+    if from_pitch is None:
+        from_pitch = getattr(active_tracks[group], 'pitch', 1.0)
+
+    from_pitch = float(from_pitch)
+    duration = beats * beat_duration
+
+    # compute a target pitch that overshoots normal speed proportional to the deficit
+    deficit = max(0.0, 1.0 - from_pitch)
+    overshoot = 1.0 + deficit * 2.0
+    target_pitch = max(1.02, overshoot)
+
+    pitch_transitions[group] = {
+        'start_time': time.time(),
+        'duration': duration,
+        'start_pitch': from_pitch,
+        'target_pitch': target_pitch
+    }
+
+
+def update(dt=0.0):
+    """Call this every frame with delta time. Progresses any scheduled pitch
+    transitions and cleans up finished transitions."""
+    now = time.time()
+    to_remove = []
+    for group, info in pitch_transitions.items():
+        if group not in active_tracks:
+            to_remove.append(group)
+            continue
+        elapsed = now - info['start_time']
+        t = min(1.0, elapsed / max(1e-6, info['duration']))
+        # linear interpolation from start_pitch -> target_pitch
+        new_pitch = info['start_pitch'] + (info['target_pitch'] - info['start_pitch']) * t
+        active_tracks[group].pitch = new_pitch
+
+        # when transition completes, ensure we settle at normal pitch=1.0
+        if t >= 1.0:
+            # gently return to normal 1.0 if overshot
+            active_tracks[group].pitch = 1.0
+            to_remove.append(group)
+
+    for g in to_remove:
+        pitch_transitions.pop(g, None)
+
+
+def set_beat_duration(seconds_per_beat: float):
+    """Set the beat duration in seconds (used to compute transition durations)."""
+    global beat_duration
+    try:
+        beat_duration = float(seconds_per_beat)
+    except Exception:
+        pass
+
+
+
+    
+  
